@@ -28,6 +28,9 @@ void Heart::start()
 	if (!is_running)
 	{
 		async_call = std::async(std::launch::async, &Heart::run, this);
+
+		// delay for slow ass vtables
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 
 }
@@ -42,6 +45,7 @@ void Heart::stop()
 
 void Heart::run()
 {
+
 	is_running = true;
 
 	// Why do we need frames_processed variable?
@@ -71,8 +75,6 @@ void Heart::run()
 		float passed_to_frame = static_cast<float>(loop_end_time.time_since_epoch().count() - loop_start_time.time_since_epoch().count());
 		// Same thing, but in seconds.
 		delta = passed_to_frame / static_cast<float>(NANOSECOND);
-
-		//std::cout << getDelta() << std::endl;
 		/// SUMMARY OF THE PREVIOUS LOOP ///
 
 
@@ -174,7 +176,7 @@ void Heart::input()
 }
 void Heart::render()
 {
-
+	printf("HELLO");
 }
 
 

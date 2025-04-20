@@ -2,12 +2,17 @@
 
 #define GLFW_INCLUDE_VULKAN
 
-#include <vector>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <thread>
 #include "DimensionUtils.h"
+#include "Types.h"
+
+namespace AppStructure
+{
+	class ExternalClassAccess;
+}
 
 
 /**
@@ -142,7 +147,7 @@ public:
 
 private:
 
-	friend class AppStructure;
+	friend class AppStructure::ExternalClassAccess;
 
 	unsigned int id;
 
@@ -159,6 +164,6 @@ private:
 	float		 z_near;
 	float		 z_far;
 
-	std::vector<std::shared_ptr<std::thread>> rendering_threads;
+	vec<sptr<std::thread>> rendering_threads;
 
 };

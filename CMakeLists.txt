@@ -8,12 +8,12 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project ("CorEngine" VERSION 0.1.3)
-set(PROJECT_VERSION_BUILD 1)
+project ("CorEngine" VERSION 0.1.3  )
+set(PROJECT_VERSION_BUILD          1)
 
 configure_file(
     ${CMAKE_SOURCE_DIR}/CorEngine.in 
-    ${CMAKE_SOURCE_DIR}/CorEngine.h
+    ${CMAKE_SOURCE_DIR}/CorEngine.hpp
 )
 
 set(CPM_DOWNLOAD_VERSION 0.27.2) 
@@ -26,9 +26,10 @@ endif()
 
 include(${CPM_DOWNLOAD_LOCATION})
 
-add_executable (${PROJECT_NAME} "CorEngine.cpp" "Engine/Core/AppStructure.cpp" "Engine/Core/AppStructure.h" "CorEngine.h" "Engine/Core/Launcher.cpp" "Engine/Graphics/RenderManager.cpp" "Engine/Input/MouseInput.cpp" "Engine/Input/KeyboardInput.cpp" "Engine/Core/WindowManager.cpp" "Engine/Utils/DimensionUtils.h"  "Engine/Utils/Visibility.h" "Engine/Core/LoopManager.cpp" "Engine/Core/LoopManager.h" "Engine/Graphics/RenderManager.h" "Engine/Core/Entity/Entity.h" "Engine/Core/Entity/Model.h" "Engine/Core/Entity/Texture.h" "Engine/Core/Entity/Texture.cpp")
+add_executable (${PROJECT_NAME} "CorEngine.cpp" "Engine/Core/AppStructure.cpp" "Engine/Core/AppStructure.h" "CorEngine.h"  "Engine/Graphics/RenderManager.cpp" "Engine/Input/MouseInput.cpp" "Engine/Input/KeyboardInput.cpp" "Engine/Core/WindowManager.cpp" "Engine/Utils/DimensionUtils.h" "Engine/Core/LoopManager.cpp" "Engine/Core/LoopManager.h" "Engine/Graphics/RenderManager.h" "Engine/Core/Entity/Entity.h" "Engine/Core/Entity/Model.h" "Engine/Core/Entity/Texture.h" "Engine/Core/Entity/Texture.cpp" "Engine/Utils/Types.h")
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/Engine/Core")
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/Engine/Utils")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)

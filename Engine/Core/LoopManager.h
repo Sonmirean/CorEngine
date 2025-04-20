@@ -3,6 +3,7 @@
 #include <chrono>
 #include <future>
 #include "WindowManager.h"
+#include "Types.h"
 
 /**
 * Declares a set of properties to be used while creating a Heart object.
@@ -12,7 +13,7 @@
 struct HeartProperties
 {
 	unsigned int fps_cap;
-	std::vector<std::shared_ptr<Window>> attached_windows;
+	vec<sptr<Window>> attached_windows;
 };
 
 // This class represents an asynchronous rendering cycle.

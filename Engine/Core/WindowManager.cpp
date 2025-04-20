@@ -8,7 +8,6 @@
 #include <thread>
 #include "DimensionUtils.h"
 #include "WindowManager.h"
-#include "Visibility.h"
 #include "AppStructure.h"
 
 
@@ -52,7 +51,7 @@ Window::Window(WindowProperties* props) :
 
 	
 
-	AppStructure::addWindow(this);
+	AppStructure::ExternalClassAccess::addWindow(this);
 }
 
 Window::~Window()

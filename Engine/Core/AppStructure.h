@@ -2,56 +2,37 @@
 
 #define GLFW_INCLUDE_VULKAN
 
-#include <memory>
-#include <vector> 
 #include <GLFW/glfw3.h>
-#include "WindowManager.h"
 #include "LoopManager.h"
+#include "Types.h"
 
-
-template <typename T>
-using vec = std::vector<T>;
-
-// General structure of an application.
-static class AppStructure
+namespace AppStructure
 {
-private:
-	AppStructure();
+	namespace
+	{
+		VkInstance					 instance;
 
-	static VkInstance instance;
-	static vec<std::shared_ptr<Window>> app_windows;
-	static vec<VkPhysicalDevice> phys_devices;
+		vec<sptr<Window>>			 app_windows;
+		vec<VkPhysicalDevice>		 phys_devices;
+		VkAllocationCallbacks		 alloc_callbacks;
 
+		VkInstanceCreateInfo* createVkInfo(VkApplicationInfo app_info);
+		VkApplicationInfo createVkAppInfo(const char* app_name, uint32_t app_version[4]);
+		VkInstanceCreateInfo* redefineVkInfo(VkInstanceCreateInfo* c_info, VkApplicationInfo app_info);
+		VkApplicationInfo redefineVkAppInfo(const VkApplicationInfo* a_info);
 
-	static VkInstanceCreateInfo* createVkInfo(VkApplicationInfo app_info);
+		void enumPhysDevices();
+	}
 
-	static VkApplicationInfo createVkAppInfo(const char* app_name, uint32_t app_version[4]);
-
-	static VkInstanceCreateInfo* redefineVkInfo(VkInstanceCreateInfo* c_info, VkApplicationInfo app_info);
-
-	static VkApplicationInfo redefineVkAppInfo(const VkApplicationInfo* a_info);
-
-
-	/*
-	Adds a Window object to application structure and defines its ID number.
-	*/
-	static void addWindow(Window* window);
-
-	static void enumPhysDevices();
-
-	friend class Window;
-	friend class Heart;
-
-public:
+	static class ExternalClassAccess
+	{
+	public:
+		static void addWindow(Window* window);
+	private:
+		static void _addWindow(Window* window);
+	};
 
 
-	/*
-	Removes a Window object from application structure
-	and deletes its instance.
-	*/
-	static void remWindow(Window* window);
-
-	static VkInstance* getInstance();
 
 	static unsigned int getWinQuantity();
 
@@ -70,5 +51,6 @@ public:
 	*/
 	static void initVulkan(VkInstanceCreateInfo* info, VkAllocationCallbacks* callbacks);
 
-	static void cleanup();
-};
+	static void finalCleanup();
+
+}

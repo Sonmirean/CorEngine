@@ -8,8 +8,8 @@
 
 #include <chrono>
 
-#include "Engine/Core/AppStructure.h"
-#include "Engine/Core/WindowManager.h"
+#include "AppStructure.h"
+#include "WindowManager.h"
 
 #include "CorEngine.h"
 /*
@@ -33,11 +33,16 @@ void foo()
 */
 
 
-class SpecialHeart : Heart
+class SpecialHeart : public Heart
 {
+
+public:
+
+    using Heart::Heart;
+
     void render() override
     {
-        std::cout << "smthng is rendered" << std::endl;
+        printf("smthng is rendered\n");
     }
 };
 
@@ -45,11 +50,6 @@ int main()
 {
 
     glfwInit();
-
-    /*
-    std::thread lolthr(foo);
-    lolthr.join();
-    */
 
     char name[] = "Window to hell";
 
@@ -68,11 +68,14 @@ int main()
 
     HeartProperties heartprops;
     heartprops.fps_cap = 100;
-    Heart demonheart = Heart(&heartprops);
+    SpecialHeart demonheart = SpecialHeart(&heartprops);
 
     
+
     demonheart.start();
 
+   
+    
     while (demonheart.isRunning())
     {
         
