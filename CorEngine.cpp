@@ -1,12 +1,12 @@
 ﻿
 #define GLFW_INCLUDE_VULKAN
 
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 #include <iostream>
 #include <thread>
 
 #include <chrono>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include "AppStructure.h"
 #include "WindowManager.h"
@@ -42,7 +42,7 @@ public:
 
     void render() override
     {
-        printf("smthng is rendered\n");
+       
     }
 };
 
@@ -70,11 +70,13 @@ int main()
     heartprops.fps_cap = 100;
     SpecialHeart demonheart = SpecialHeart(&heartprops);
 
-    
+
+	unsigned int ver[4] = { 0,0,0,1 };
+	AppStructure::initVulkan(&name[0], ver);
+
 
     demonheart.start();
 
-   
     
     while (demonheart.isRunning())
     {

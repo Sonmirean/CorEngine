@@ -6,11 +6,151 @@
 #include "AppStructure.h"
 #include "WindowManager.h"
 #include "CorEngine.h"
+#include "Types.h"
+#include "Debug.h"
 
 namespace AppStructure
 {
 	namespace
 	{
+
+		namespace VkHierarchyTree
+		{
+			struct LogicalDevice
+			{
+				VkDevice vk_handle;
+
+
+			};
+			
+			struct PhysicalDevice
+			{
+			public:
+
+
+				vec<VkQueueFamilyProperties>	 queue_family_props;
+
+
+				void defineQueueFamilyProps()
+				{
+					uint32_t queue_family_props_count;
+					vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, nullptr);
+					queue_family_props.reserve(queue_family_props_count);
+					vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, queue_family_props.data());
+
+					CORENGINE_DEBUG_PRINT(queue_family_props_count);
+				}
+
+
+				PhysicalDevice(VkPhysicalDevice vk_handle) : vk_handle(vk_handle)
+				{
+					defineQueueFamilyProps();
+
+					CORENGINE_DEBUG_PRINT(queue_family_props.size())
+
+					/// 
+					for (size_t i = 0; i < queue_family_props.size(); i++)
+					{
+						CORENGINE_DEBUG_PRINT(queue_family_props[i].queueFlags);
+					}
+				}
+
+				struct Queue
+				{
+				public:
+					PhysicalDevice* phys_device;
+					VkQueue vk_handle;
+
+					Queue(VkDeviceQueueCreateFlags flags, uint32_t queu_family_index)
+					{
+						constructor(flags, queu_family_index, 1);
+					}
+					Queue(VkDeviceQueueCreateFlags flags, uint32_t queu_family_index, uint32_t count)
+					{
+						constructor(flags, queu_family_index, count);
+					}
+
+					
+
+				private:
+					void constructor(VkDeviceQueueCreateFlags flags, uint32_t queu_family_index, uint32_t count)
+					{
+						if (queu_family_index <= phys_device->queue_family_props.size())
+						{
+							VkDeviceQueueCreateInfo info{};
+							info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+							info.flags = flags;
+							info.queueCount = count;
+							info.queueFamilyIndex = queu_family_index;
+						}
+						else
+						{
+							throw std::out_of_range("Error - Desired queue family is absent on current GPU.");
+						}
+					}
+
+				};
+				struct Heap
+				{
+					PhysicalDevice* phys_device;
+
+					VkMemoryHeap vk_handle;
+
+
+				};
+
+
+
+			private:
+				VkPhysicalDevice vk_handle;
+
+				
+				
+				VkPhysicalDeviceMemoryProperties mem_props;
+
+				vec<Queue> vk_queues;
+				vec<Heap>  vk_heaps;
+
+
+			};
+
+			VkInstance			  instance;
+			VkAllocationCallbacks alloc_callbacks;
+			vec<PhysicalDevice>		  phys_gpus;
+
+			void enumeratePhysDevices()
+			{
+				
+				uint32_t phys_devices_found;
+				checkVkSuccess(vkEnumeratePhysicalDevices(instance, &phys_devices_found, nullptr));
+
+				if (phys_devices_found > 0)
+				{
+					vec<VkPhysicalDevice> raw_devices(phys_devices_found);
+
+					checkVkSuccess(vkEnumeratePhysicalDevices(instance, &phys_devices_found, raw_devices.data()));
+
+					phys_gpus.reserve(phys_devices_found);
+
+					for (unsigned int i = 0; i < phys_devices_found; i++)
+					{
+						PhysicalDevice phys_device = PhysicalDevice(raw_devices[i]);
+						phys_gpus.push_back(phys_device);
+					}
+					CORENGINE_DEBUG_PRINT(phys_devices_found)
+					
+				}
+				else
+				{
+					throw std::runtime_error("Error - No attached physical devices found.");
+				}
+			}
+
+
+		};
+
+		vec<sptr<Window>>			 app_windows;
+
 		VkInstanceCreateInfo* createVkInfo(VkApplicationInfo app_info)
 		{
 			VkInstanceCreateInfo createInfo{};
@@ -24,7 +164,6 @@ namespace AppStructure
 
 			return &createInfo;
 		}
-
 		VkApplicationInfo createVkAppInfo(const char* app_name, uint32_t app_version[4])
 		{
 			VkApplicationInfo appInfo{};
@@ -41,7 +180,6 @@ namespace AppStructure
 
 			return appInfo;
 		}
-
 		VkInstanceCreateInfo* redefineVkInfo(VkInstanceCreateInfo* c_info, VkApplicationInfo app_info)
 		{
 			VkInstanceCreateInfo createInfo{};
@@ -57,7 +195,6 @@ namespace AppStructure
 
 			return &createInfo;
 		}
-
 		VkApplicationInfo redefineVkAppInfo(const VkApplicationInfo* a_info)
 		{
 			VkApplicationInfo appInfo{};
@@ -75,32 +212,33 @@ namespace AppStructure
 			return appInfo;
 		}
 
-		void enumPhysDevices()
+		
+		void enumerateQueueFamilyProps(VkPhysicalDevice device)
 		{
-			VkPhysicalDevice* start;
-			uint32_t end;
-			VkResult res_1 = vkEnumeratePhysicalDevices(instance, &end, start);
-			if (res_1 != VK_SUCCESS)
-			{
-				throw std::runtime_error("Failed to enumerate physical devices. VkResult code: " + res_1);
-			}
-			else
-			{
-				phys_devices.assign(start, start + end);
-			}
+			uint32_t count;
+			vkGetPhysicalDeviceQueueFamilyProperties(device, &count, nullptr);
+
 		}
+
+		VkQueue createQueue(VkPhysicalDevice* gpu_ptr)
+		{
+			
+		}
+
+		void initCommandPool()
+		{
+
+		}
+
 	}
 
-	void ExternalClassAccess::_addWindow(Window* window)
+	void ExternalAccess::addWindow(Window* window)
 	{
 		app_windows.push_back(std::shared_ptr<Window>(window));
 		window->id = app_windows.size() - 1;
 	}
 
-	void ExternalClassAccess::addWindow(Window* window)
-	{
-		_addWindow(window);
-	}
+
 
 	unsigned int getWinQuantity()
 	{
@@ -109,29 +247,23 @@ namespace AppStructure
 
 	void initVulkan(const char* app_name, uint32_t app_version[4])
 	{
-		///
-		VkResult res_0 = vkCreateInstance(createVkInfo(createVkAppInfo(app_name, app_version)),
-			nullptr, &instance);
-		if (res_0 != VK_SUCCESS)
-			throw std::runtime_error("Failed to create Vulkan instance. VkResult code: " + res_0);
-		///
-		enumPhysDevices();
+		VkResult res = vkCreateInstance(createVkInfo(createVkAppInfo(app_name, app_version)),
+			nullptr, &VkHierarchyTree::instance);
+		checkVkSuccess(res);
+		VkHierarchyTree::enumeratePhysDevices();
 	}
 
 	void initVulkan(VkInstanceCreateInfo* info, VkAllocationCallbacks* callbacks)
 	{
-		///
-		VkResult res_0 = vkCreateInstance(redefineVkInfo(info, redefineVkAppInfo(info->pApplicationInfo)),
-			callbacks, &instance);
-		if (res_0 != VK_SUCCESS)
-			throw std::runtime_error("Failed to create Vulkan instance. VkResult code: " + res_0);
-		///
-		enumPhysDevices();
+		VkResult res = vkCreateInstance(redefineVkInfo(info, redefineVkAppInfo(info->pApplicationInfo)),
+			callbacks, &VkHierarchyTree::instance);
+		checkVkSuccess(res);
+		VkHierarchyTree::enumeratePhysDevices();
 	}
 
 	void finalCleanup()
 	{
-		vkDestroyInstance(instance, nullptr);
+		vkDestroyInstance(VkHierarchyTree::instance, nullptr);
 
 		for (size_t i = 0; i < app_windows.size(); i++)
 		{

@@ -49,9 +49,7 @@ Window::Window(WindowProperties* props) :
 
 	glfwShowWindow(handle);
 
-	
-
-	AppStructure::ExternalClassAccess::addWindow(this);
+	AppStructure::ExternalAccess::addWindow(this);
 }
 
 Window::~Window()
@@ -62,7 +60,7 @@ Window::~Window()
 /*
 bool Window::operator ==(Window win)
 {
-	//cyka
+
 }
 */
 

@@ -11,6 +11,22 @@ endif()
 project ("CorEngine" VERSION 0.1.3  )
 set(PROJECT_VERSION_BUILD          1)
 
+
+
+##### INTERNAL DEBUG CONFIG #####
+
+add_compile_definitions(CORENGINE_DEBUG_PRINT_ENABLED)
+
+#add_compile_definitions(CORENGINE_DEBUG_PRINT_VERBOSE)
+
+##### INTERNAL DEBUG CONFIG #####
+
+
+
+
+
+
+
 configure_file(
     ${CMAKE_SOURCE_DIR}/CorEngine.in 
     ${CMAKE_SOURCE_DIR}/CorEngine.hpp
@@ -26,7 +42,7 @@ endif()
 
 include(${CPM_DOWNLOAD_LOCATION})
 
-add_executable (${PROJECT_NAME} "CorEngine.cpp" "Engine/Core/AppStructure.cpp" "Engine/Core/AppStructure.h" "CorEngine.h"  "Engine/Graphics/RenderManager.cpp" "Engine/Input/MouseInput.cpp" "Engine/Input/KeyboardInput.cpp" "Engine/Core/WindowManager.cpp" "Engine/Utils/DimensionUtils.h" "Engine/Core/LoopManager.cpp" "Engine/Core/LoopManager.h" "Engine/Graphics/RenderManager.h" "Engine/Core/Entity/Entity.h" "Engine/Core/Entity/Model.h" "Engine/Core/Entity/Texture.h" "Engine/Core/Entity/Texture.cpp" "Engine/Utils/Types.h")
+add_executable (${PROJECT_NAME} "CorEngine.cpp" "Engine/Core/AppStructure.cpp" "Engine/Core/AppStructure.h" "CorEngine.h"  "Engine/Graphics/RenderManager.cpp" "Engine/Input/MouseInput.cpp" "Engine/Input/KeyboardInput.cpp" "Engine/Core/WindowManager.cpp" "Engine/Utils/DimensionUtils.h" "Engine/Core/LoopManager.cpp" "Engine/Core/LoopManager.h" "Engine/Graphics/RenderManager.h" "Engine/Core/Entity/Entity.h" "Engine/Core/Entity/Model.h" "Engine/Core/Entity/Texture.h" "Engine/Core/Entity/Texture.cpp" "Engine/Utils/Types.h"  "Engine/Utils/Debug.h" "Engine/Utils/Types.cpp")
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/Engine/Core")

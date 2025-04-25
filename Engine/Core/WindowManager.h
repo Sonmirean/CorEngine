@@ -11,7 +11,7 @@
 
 namespace AppStructure
 {
-	class ExternalClassAccess;
+	class ExternalAccess;
 }
 
 
@@ -40,7 +40,7 @@ struct WindowProperties
 	GLFWmonitor*		   monitor = nullptr;
 	GLFWwindow*			   share = nullptr;
 	float				   fov = 1.0471975511965976f;
-	glm::mat4x4			   proj_mat;
+	glm::mat4x4			   proj_mat{};
 	unsigned int		   x_pos = 500;
 	unsigned int		   y_pos = 500;
 	float				   z_near = 0.01f;
@@ -147,7 +147,7 @@ public:
 
 private:
 
-	friend class AppStructure::ExternalClassAccess;
+	friend class AppStructure::ExternalAccess;
 
 	unsigned int id;
 
