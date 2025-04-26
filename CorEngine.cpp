@@ -16,9 +16,7 @@
 void foo()
 {
     
-    unsigned int ver[4] = { 0,0,0,1 };
-
-    AppStructure::initVulkan(&name[0], ver);
+    
 
     
 
@@ -31,6 +29,7 @@ void foo()
     AppStructure::cleanup();
 }
 */
+
 
 
 class SpecialHeart : public Heart

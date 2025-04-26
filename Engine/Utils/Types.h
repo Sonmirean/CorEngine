@@ -11,4 +11,4 @@ using vec = std::vector<T>;
 template <typename T>
 using sptr = std::shared_ptr<T>;
 
-extern void checkVkSuccess(VkResult res);
+extern void checkVkSuccess_(VkResult res);
