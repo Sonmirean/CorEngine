@@ -43,17 +43,18 @@ namespace AppStructure
 					//!// Pointer to a physical device which is parent to this logical one.
 					PhysicalDevice* parent_device;
 					/// Constructor
-					LogicalDevice()
+					LogicalDevice(vec<const char*> enabled_extension_names, VkPhysicalDeviceFeatures* features)
 					{
+						VkDeviceCreateInfo info{};
+						info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+						info.enabledExtensionCount = enabled_extension_names.size();
+						info.ppEnabledExtensionNames = enabled_extension_names.data();
+						info.pEnabledFeatures = features;
 
+						assert((vkCreateDevice(parent_device->vk_handle, &info, nullptr, &vk_handle)) == VK_SUCCESS);
 					}
 
 				private:
-					// Internal constructor
-					void constructor()
-					{
-
-					}
 
 				};
 				
@@ -72,22 +73,25 @@ namespace AppStructure
 				struct Queue
 				{
 				public:
+					//!// Pointer to a parent struct
 					PhysicalDevice* phys_device;
+					//!// Vulkan handle of this wrap.
 					VkQueue vk_handle;
 
-					Queue(VkDeviceQueueCreateFlags flags, uint32_t queue_family_index)
+					Queue(VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, const float prior)
 					{
-						constructor(flags, queue_family_index, 1);
+						constructor(flags, queue_family_index, &prior, 1);
 					}
-					Queue(VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, uint32_t count)
+					Queue(VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, const float* prior, uint32_t count)
 					{
-						constructor(flags, queue_family_index, count);
+						constructor(flags, queue_family_index, prior, count);
 					}
 
 
 
 				private:
-					void constructor(VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, uint32_t count)
+					//!// Internal constructor.
+					void constructor(VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, const float* prior, uint32_t count)
 					{
 						if (queue_family_index <= phys_device->queue_family_props.size())
 						{
@@ -96,6 +100,7 @@ namespace AppStructure
 							info.flags = flags;
 							info.queueCount = count;
 							info.queueFamilyIndex = queue_family_index;
+							info.pQueuePriorities = prior;
 						}
 						else
 						{
@@ -106,6 +111,24 @@ namespace AppStructure
 				};
 				vec<Queue> queues;
 
+				//!// Device layers available for current physical device.
+				vec<VkLayerProperties> layer_props;
+				void enumerateDeviceLayers()
+				{
+					uint32_t layer_count;
+					assert(vkEnumerateDeviceLayerProperties(vk_handle, &layer_count, nullptr));
+					if (layer_count != 0)
+					{
+						layer_props.reserve(layer_count);
+						assert(vkEnumerateDeviceLayerProperties(vk_handle, &layer_count, layer_props.data()));
+						CORENGINE_DEBUG_PRINT(layer_count)
+					}
+					else
+					{
+						throw std::exception("Error - No available layers found for current device.");
+					}
+				}
+
 				//!// I don't remember what does it stands for
 				VkPhysicalDeviceMemoryProperties mem_props;
 
@@ -115,11 +138,11 @@ namespace AppStructure
 			void enumeratePhysDevices()
 			{
 				uint32_t phys_devices_found;
-				checkVkSuccess_(vkEnumeratePhysicalDevices(instance, &phys_devices_found, nullptr));
+				assert((vkEnumeratePhysicalDevices(instance, &phys_devices_found, nullptr)) == VK_SUCCESS);
 				if (phys_devices_found > 0)
 				{
 					vec<VkPhysicalDevice> raw_devices(phys_devices_found);
-					checkVkSuccess_(vkEnumeratePhysicalDevices(instance, &phys_devices_found, raw_devices.data()));
+					assert((vkEnumeratePhysicalDevices(instance, &phys_devices_found, raw_devices.data())) == VK_SUCCESS);
 					phys_devices.reserve(phys_devices_found);
 					for (unsigned int i = 0; i < phys_devices_found; i++)
 					{
@@ -130,7 +153,7 @@ namespace AppStructure
 				}
 				else
 				{
-					throw std::runtime_error("Error - No attached physical devices found.");
+					throw std::exception("Error - No attached physical devices found.");
 				}
 			}
 
@@ -139,19 +162,18 @@ namespace AppStructure
 			void enumeratePhysDeviceGroupProps()
 			{
 				uint32_t phys_device_group_props_count;
-				checkVkSuccess_(vkEnumeratePhysicalDeviceGroups(instance, &phys_device_group_props_count, nullptr));
+				assert((vkEnumeratePhysicalDeviceGroups(instance, &phys_device_group_props_count, nullptr)) == VK_SUCCESS);
 				if (phys_device_group_props_count != 0)
 				{
 					phys_device_groups.reserve(phys_device_group_props_count);
-					checkVkSuccess_(vkEnumeratePhysicalDeviceGroups(instance, &phys_device_group_props_count, phys_device_groups.data()));
+					assert((vkEnumeratePhysicalDeviceGroups(instance, &phys_device_group_props_count, phys_device_groups.data())) == VK_SUCCESS);
 
 					CORENGINE_DEBUG_PRINT(phys_device_group_props_count);
 				}
 			}
 
 
-
-		};
+		};// VkHierarchyTree
 
 		vec<sptr<Window>> app_windows;
 
@@ -202,7 +224,7 @@ namespace AppStructure
 	{
 		VkResult res = vkCreateInstance(createVkInfo(createVkAppInfo(app_name, app_version)),
 			nullptr, &VkHierarchyTree::instance);
-		checkVkSuccess_(res);
+		assert(res);
 		VkHierarchyTree::enumeratePhysDevices();
 	}
 
