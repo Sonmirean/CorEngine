@@ -14,6 +14,12 @@ namespace AppStructure
 	namespace
 	{
 
+		///----------------------
+		//
+		/// RE-ORGANIZE THIS HELL
+		//
+		///----------------------
+
 		namespace VkHierarchyTree
 		{
 			//!// Vulkan instance - root of the hierarchy tree, and the basement of everything in Vulkan.
@@ -23,51 +29,43 @@ namespace AppStructure
 			//!// device that is recognized as suitable for rendering by Vulkan.
 			struct PhysicalDevice
 			{
-			public:
 				//!// Vulkan handle of this wrap.
 				VkPhysicalDevice vk_handle;
 				/// Constructor
 				PhysicalDevice(VkPhysicalDevice vk_handle) : vk_handle(vk_handle)
 				{
 					enumerateQueueFamilyProps();
-					CORENGINE_DEBUG_PRINT(queue_family_props.size())
+
+					phys_device_props = new VkPhysicalDeviceProperties2{};
+					vkGetPhysicalDeviceProperties2(vk_handle, phys_device_props);
+
+					CORENGINE_DEBUG_PRINT(phys_device_props->properties.deviceName)
 				}
 
 				//!// Logical device represents a connection to a physical one.
 				//!// One physical device may have several logical devices.
 				struct LogicalDevice
 				{
-				public:
 					//!// Vulkan handle of this wrap.
 					VkDevice vk_handle;
 					//!// Pointer to a physical device which is parent to this logical one.
 					PhysicalDevice* parent_device;
 					/// Constructor
-					LogicalDevice(vec<const char*> enabled_extension_names, VkPhysicalDeviceFeatures* features)
+					LogicalDevice(PhysicalDevice* parent, uint32_t queue_count, vec<VkDeviceQueueCreateInfo> queue_infos, vec<const char*> enabled_extension_names, VkPhysicalDeviceFeatures* features)
 					{
+						parent_device = parent;
 						VkDeviceCreateInfo info{};
 						info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+						info.queueCreateInfoCount = queue_count;
+						info.pQueueCreateInfos = queue_infos.data();
 						info.enabledExtensionCount = enabled_extension_names.size();
 						info.ppEnabledExtensionNames = enabled_extension_names.data();
 						info.pEnabledFeatures = features;
-
+						
 						assert((vkCreateDevice(parent_device->vk_handle, &info, nullptr, &vk_handle)) == VK_SUCCESS);
 					}
 
-				private:
-
 				};
-				
-				//!// Queue families available on a physical device
-				vec<VkQueueFamilyProperties> queue_family_props;
-				void enumerateQueueFamilyProps()
-				{
-					uint32_t queue_family_props_count;
-					vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, nullptr);
-					queue_family_props.reserve(queue_family_props_count);
-					vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, queue_family_props.data());
-					CORENGINE_DEBUG_PRINT(queue_family_props_count);
-				}
 
 				//!// Queue of commands for this device.
 				struct Queue
@@ -78,12 +76,14 @@ namespace AppStructure
 					//!// Vulkan handle of this wrap.
 					VkQueue vk_handle;
 
-					Queue(VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, const float prior)
+					Queue(PhysicalDevice* parent, VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, const float prior)
 					{
+						phys_device = parent;
 						constructor(flags, queue_family_index, &prior, 1);
 					}
-					Queue(VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, const float* prior, uint32_t count)
+					Queue(PhysicalDevice* parent, VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, const float* prior, uint32_t count)
 					{
+						phys_device = parent;
 						constructor(flags, queue_family_index, prior, count);
 					}
 
@@ -93,7 +93,7 @@ namespace AppStructure
 					//!// Internal constructor.
 					void constructor(VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, const float* prior, uint32_t count)
 					{
-						if (queue_family_index <= phys_device->queue_family_props.size())
+						if (queue_family_index <= phys_device->queue_families.size())
 						{
 							VkDeviceQueueCreateInfo info{};
 							info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -104,7 +104,7 @@ namespace AppStructure
 						}
 						else
 						{
-							throw std::out_of_range("Error - Desired queue family is absent on current GPU.");
+							throw std::exception("Error - Desired queue family is absent on current GPU.");
 						}
 					}
 
@@ -131,6 +131,24 @@ namespace AppStructure
 
 				//!// I don't remember what does it stands for
 				VkPhysicalDeviceMemoryProperties mem_props;
+
+				//!// Queue families available on a physical device
+				vec<VkQueueFamilyProperties> queue_families{};
+				void enumerateQueueFamilyProps()
+				{
+					uint32_t queue_family_props_count;
+					vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, nullptr);
+
+					queue_families = vec<VkQueueFamilyProperties>(queue_family_props_count);
+					vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, queue_families.data());
+
+					CORENGINE_DEBUG_PRINT(queue_family_props_count);
+					CORENGINE_DEBUG_PRINT(this->queue_families.size());
+				}
+
+				//!// Pointer to a structure which stores properties of this device.
+				VkPhysicalDeviceProperties2* phys_device_props;
+
 
 			};
 			//!// Physical devices found by current Vulkan instance.
@@ -209,6 +227,17 @@ namespace AppStructure
 
 	}// namespace
 
+	using LogicalDevice = VkHierarchyTree::PhysicalDevice::LogicalDevice;
+
+	// Creates VkDevice object alongside with a pack of queues.
+	LogicalDevice createVirtualDevice(uint32_t phys_device_index, uint32_t queue_count, 
+		vec<VkDeviceQueueCreateInfo> queue_infos, vec<const char*> enabled_extension_names, 
+		VkPhysicalDeviceFeatures* features)
+	{
+		return LogicalDevice(&VkHierarchyTree::phys_devices[phys_device_index], 
+			queue_count, queue_infos, enabled_extension_names, features);
+	}
+
 	void ExternalAccess::addWindow(Window* window)
 	{
 		app_windows.push_back(std::shared_ptr<Window>(window));
@@ -224,8 +253,10 @@ namespace AppStructure
 	{
 		VkResult res = vkCreateInstance(createVkInfo(createVkAppInfo(app_name, app_version)),
 			nullptr, &VkHierarchyTree::instance);
-		assert(res);
+		assert(res == VK_SUCCESS);
+		VkHierarchyTree::enumeratePhysDeviceGroupProps();
 		VkHierarchyTree::enumeratePhysDevices();
+
 	}
 
 	void finalCleanup()

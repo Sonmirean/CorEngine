@@ -1,6 +1,14 @@
 #pragma once
 
+#ifndef GLFW_INCLUDE_VULKAN
+#define  GLFW_INCLUDE_VULKAN
+#endif // !GLFW_INCLUDE_VULKAN
+
 #include <filesystem>
+#include <GLFW/glfw3.h>]
+#include <iostream>
+
+extern void ensureVkSuccess(VkResult res);
 
 #ifdef CORENGINE_DEBUG_PRINT_ENABLED
 
