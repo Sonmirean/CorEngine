@@ -36,10 +36,10 @@ namespace AppStructure
 				{
 					enumerateQueueFamilyProps();
 
-					phys_device_props = new VkPhysicalDeviceProperties2{};
-					vkGetPhysicalDeviceProperties2(vk_handle, phys_device_props);
+					phys_device_props = new VkPhysicalDeviceProperties{};
+					vkGetPhysicalDeviceProperties(vk_handle, phys_device_props);
 
-					CORENGINE_DEBUG_PRINT(phys_device_props->properties.deviceName)
+					printPhysicalDeviceProps(phys_device_props);
 				}
 
 				//!// Logical device represents a connection to a physical one.
@@ -147,7 +147,7 @@ namespace AppStructure
 				}
 
 				//!// Pointer to a structure which stores properties of this device.
-				VkPhysicalDeviceProperties2* phys_device_props;
+				VkPhysicalDeviceProperties* phys_device_props;
 
 
 			};

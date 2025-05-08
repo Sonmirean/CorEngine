@@ -10,6 +10,8 @@
 
 extern void ensureVkSuccess(VkResult res);
 
+extern void printPhysicalDeviceProps(VkPhysicalDeviceProperties* props);
+
 #ifdef CORENGINE_DEBUG_PRINT_ENABLED
 
 #ifdef CORENGINE_DEBUG_PRINT_VERBOSE

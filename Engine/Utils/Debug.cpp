@@ -10,6 +10,7 @@ void ensureVkSuccess(VkResult res)
 void printPhysicalDeviceProps(VkPhysicalDeviceProperties* props)
 {
 	std::cout \
+		<< "\033[35m\n===========================================\n"
 		<< "\033[36m >>> DEVICE INFO - " << props->deviceName
 		<< "\n" "API version: " << props->apiVersion
 		<< "\n" "Driver version: " << props->driverVersion
@@ -131,10 +132,31 @@ void printPhysicalDeviceProps(VkPhysicalDeviceProperties* props)
 		<< "\n" "Framebuffer no attachment sample counts bitmask: " << props->limits.framebufferNoAttachmentsSampleCounts
 
 		<< "\n" "Maximum color attachments per subpass: " << props->limits.maxColorAttachments
-		<< "\n" ": " << props->limits.
+		<< "\n" "Sampled image sample counts bitmask (non-integer color): " << props->limits.sampledImageColorSampleCounts
+		<< "\n" "Sampled image sample counts bitmask (integer color): " << props->limits.sampledImageIntegerSampleCounts
+		<< "\n" "Sampled image sample counts bitmask (depth format): " << props->limits.sampledImageDepthSampleCounts
+		<< "\n" "Sampled image sample counts bitmask (stencil format): " << props->limits.sampledImageStencilSampleCounts
+		<< "\n" "Sampled image sample counts (storage image): " << props->limits.storageImageSampleCounts
+		<< "\n" "Maximum sample mask words: " << props->limits.maxSampleMaskWords
+		<< "\n" "Compute & graphics queue timestamp supported: " << props->limits.timestampComputeAndGraphics
 
-
-
-
+		<< "\n" "Maximum clip distances per shader stage: " << props->limits.maxClipDistances
+		<< "\n" "Maximum cull distances per shader stage: " << props->limits.maxCullDistances
+		<< "\n" "Maximum combined clip & cull distances per shader stage: " << props->limits.maxCombinedClipAndCullDistances
+		<< "\n" "Discrete queue priorities: " << props->limits.discreteQueuePriorities
+		<< "\n" "Point size range: "
+		"Min: " << props->limits.pointSizeRange[0] <<
+		" Max: " << props->limits.pointSizeRange[1]
+		<< "\n" "Line width range: "
+		"Min: " << props->limits.lineWidthRange[0] <<
+		" Max: " << props->limits.lineWidthRange[1]
+		<< "\n" "Point size granularity: " << props->limits.pointSizeGranularity
+		<< "\n" "Line width granularity: " << props->limits.lineWidthGranularity
+		<< "\n" "Strict line rasterization: " << props->limits.strictLines
+		<< "\n" "Standard rasterization sample locations: " << props->limits.standardSampleLocations
+		<< "\n" "Optimal copy buffer offset alignment: " << props->limits.optimalBufferCopyOffsetAlignment
+		<< "\n" "Optimal copy buffer row pitch alignment: " << props->limits.optimalBufferCopyRowPitchAlignment
+		<< "\n" "Non-coherent atom size: " << props->limits.nonCoherentAtomSize
+		<< "\033[35m\n===========================================\n"
 		<< std::endl;
 }
