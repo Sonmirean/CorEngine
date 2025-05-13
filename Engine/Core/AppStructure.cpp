@@ -2,6 +2,7 @@
 #define GLFW_INCLUDE_VULKAN
 
 #include <iostream>
+#include <thread>
 #include <GLFW/glfw3.h>
 #include "AppStructure.h"
 #include "WindowManager.h"
@@ -29,20 +30,24 @@ namespace AppStructure
 		p_parent->logical_devices.push_back(*this);
 	} // PhysicalDevice::LogicalDevice::LogicalDevice()
 
-	void PhysicalDevice::LogicalDevice::createCommandPool(uint32_t queue_family_index, VkCommandPoolCreateFlagBits* p_flags_bitmask,
+	PhysicalDevice::LogicalDevice::CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family, VkCommandPoolCreateFlagBits* p_flags_bitmask,
 		VkAllocationCallbacks* p_allocator)
+		: p_parent(p_parent)
 	{
 		VkCommandPool pool;
 		VkCommandPoolCreateInfo pool_info{};
 		pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		pool_info.flags = *p_flags_bitmask;
-		pool_info.queueFamilyIndex = queue_family_index;
+		pool_info.queueFamilyIndex = p_queue_family->index;
 
-		_ensureVkSuccess(vkCreateCommandPool(vk_handle, &pool_info, p_allocator, &pool));
-		command_pools.push_back(pool);
-	} // PhysicalDevice::LogicalDevice::createCommandPool()
+		_ensureVkSuccess(vkCreateCommandPool(p_parent->vk_handle, &pool_info, p_allocator, &pool));
+		vk_handle = pool;
+		thread_id = std::this_thread::get_id();
+		p_parent->command_pools.push_back(*this);
+	} // PhysicalDevice::LogicalDevice::CommandPool::CommandPool()
 
-	PhysicalDevice::LogicalDevice::Queue::Queue(LogicalDevice* p_parent, VkDeviceQueueCreateFlags flags, 
+
+	PhysicalDevice::QueueFamily::Queue::Queue(LogicalDevice* p_parent, VkDeviceQueueCreateFlags flags, 
 		uint32_t queue_family_index, const float* p_priorities, uint32_t count)
 		: p_parent(p_parent)
 	{

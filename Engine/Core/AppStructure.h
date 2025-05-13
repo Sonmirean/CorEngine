@@ -2,6 +2,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 
+#include <thread>
 #include <GLFW/glfw3.h>
 #include "LoopManager.h"
 #include "Types.h"
@@ -25,14 +26,45 @@ namespace AppStructure
 		// Vulkan handle of this wrap.
 		VkPhysicalDevice vk_handle;
 
-		// Logical device represents a connection to a physical one.
-		// Several logical devices can be created with usage of physical one.
+		// Queue family is an union of queues with identical features.
+		struct QueueFamily
+		{
+			// Pointer to a parent struct.
+			PhysicalDevice* p_parent;
+			// Properties of this queue family
+			VkQueueFamilyProperties props;
+			// Index of this queue family. 
+			uint32_t index;
+
+			// Queue of commands submitted to a device.
+			struct Queue
+			{
+				// Pointer to a parent struct.
+				QueueFamily* p_parent;
+				// Vulkan handle of this wrap.
+				VkQueue vk_handle;
+
+				Queue(QueueFamily* p_parent, VkDeviceQueueCreateFlags flags, uint32_t queue_family_index,
+					const float* p_priorities, uint32_t count);
+
+			}; // Queue
+			// Queues belonging to this family.
+			vec<Queue> queues{};
+
+		};
+		// Queue families available on a physical device
+		vec<QueueFamily> queue_families{};
+		// Enumerates all the queue families available on this device.
+		void enumerateQueueFamilies();
+
+		// Logical device represents a logical connection to physical device.
+		// It's one of the primary objects to interact with Vulkan implementation.
 		struct LogicalDevice
 		{
 		public:
 			// Vulkan handle of this wrap.
 			VkDevice vk_handle{};
-			// Pointer to a physical device which is parent to this logical one.
+			// Pointer to a parent struct.
 			PhysicalDevice* p_parent;
 			/**
 			* Logical device represents a logical connection to physical device.
@@ -48,39 +80,54 @@ namespace AppStructure
 			LogicalDevice(PhysicalDevice* p_parent, uint32_t queue_count, std::vector<VkDeviceQueueCreateInfo> const queue_infos,
 				std::vector<const char*> const enabled_extension_names, VkPhysicalDeviceFeatures* const p_features);
 
-			// Command pools created with usage of this device.
-			vec<VkCommandPool> command_pools{};
-
-			void createCommandPool(uint32_t queue_family_index, VkCommandPoolCreateFlagBits* p_flags_bitmask,
-				VkAllocationCallbacks* p_allocator);
-
-			// TODO - documentate queue
-			struct Queue
+			// Command pool is a pool of memory allocated for command buffers.
+			// A single command pool must NOT be used concurrently in multiple threads.
+			struct CommandPool
 			{
-				// Pointer to a parent struct
+				// Pointer to a parent struct.
 				LogicalDevice* p_parent;
 				// Vulkan handle of this wrap.
-				VkQueue vk_handle;
+				VkCommandPool vk_handle;
+				// Pointer to a thread which owns this command pool.
+				std::thread::id thread_id{};
 
-				Queue(LogicalDevice* p_parent, VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, 
-					const float* p_priorities, uint32_t count);
+				/**
+				* Command pool is a pool of memory allocated for command buffers.
+				* A single command pool must NOT be used concurrently in multiple threads.
+				* Must be created from a thread that is desired to be its owner.
+				* 
+				* TODO - add param documentation.
+				*/
+				CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family, VkCommandPoolCreateFlagBits* p_flags_bitmask,
+					VkAllocationCallbacks* p_allocator);
+				
+				// Command buffer is an object used to record Vulkan commands, and then submit them.
+				struct CommandBuffer
+				{
+					// Pointer to a parent struct.
+					CommandPool* p_parent;
+					// Vulkan handle of this wrap.
+					VkCommandBuffer vk_handle;
 
-			}; // Queue
-			vec<Queue> queues{};
+				};
+				// Command buffers allocated in this command pool.
+				vec<CommandBuffer> cmd_bufs;
+
+			};
+			// Command pools created with usage of this device.
+			vec<CommandPool> command_pools{};
+
+
+			
+			
 
 		}; // LogicalDevice
 		vec<LogicalDevice> logical_devices{};
 
+
 		// Device layers available for current physical device.
 		vec<VkLayerProperties> layer_props{};
 		void enumerateDeviceLayers();
-
-		// I don't remember what does it stands for
-		VkPhysicalDeviceMemoryProperties mem_props{};
-
-		// Queue families available on a physical device
-		vec<VkQueueFamilyProperties> queue_families{};
-		void enumerateQueueFamilyProps();
 
 		VkPhysicalDeviceFeatures getFeatures();
 
