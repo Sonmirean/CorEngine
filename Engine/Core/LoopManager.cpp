@@ -123,7 +123,7 @@ void Heart::run()
 				/// loops is more than 0.001 second.
 				fps = frames_processed;
 
-				/// We also reset both FRAMES and FRAME_COUNTER variables to 0.
+				/// We also do reset both FRAMES and FRAME_COUNTER variables to 0.
 				frames_processed = 0;
 				nanos_counter = 0;
 			}

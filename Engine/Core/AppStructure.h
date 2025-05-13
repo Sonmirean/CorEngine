@@ -10,12 +10,102 @@
 namespace AppStructure
 {
 
+	// Vulkan instance - root of the hierarchy tree, and the basement of everything in Vulkan.
+	VkInstance instance;
+
+	/**
+	Physical device represents a connection to a graphical processing unit
+	or another device that is recognized as suitable for rendering by Vulkan.
+	One must not try to create any objects with this struct manually. To query
+	the list of available physical devices, call PhysicalDevice::enumerateAttached().
+	*/
+	struct PhysicalDevice
+	{
+	public:
+		// Vulkan handle of this wrap.
+		VkPhysicalDevice vk_handle;
+
+		// Logical device represents a connection to a physical one.
+		// Several logical devices can be created with usage of physical one.
+		struct LogicalDevice
+		{
+		public:
+			// Vulkan handle of this wrap.
+			VkDevice vk_handle{};
+			// Pointer to a physical device which is parent to this logical one.
+			PhysicalDevice* p_parent;
+			/**
+			* Logical device represents a logical connection to physical device.
+			* It's one of the primary objects to interact with Vulkan implementation.
+			*
+			* @param PhysicalDevice* p_parent - A device to which create a connection.
+			* @param uint32_t queue_count - Number of queues to be created along with device.
+			* @param std::vector<VkDeviceQueueCreateInfo> const queue_infos - A vector of queue info objects for each queue. Must be of equal size that queue_count variable. If queue_count is 0, then it must be an empty vector.
+			* @param std::vector<const char*> const enabled_extension_names - A vector of UTF-8 null-terminated strings of extension names to be enabled for this device. For now, it must be an empty vector.
+			* @param VkPhysicalDeviceFeatures* const p_features - Determines which of parent physical device's features will be enabled for this logical device. One must not try to enable here features that are not supported by parent device.
+			*
+			*/
+			LogicalDevice(PhysicalDevice* p_parent, uint32_t queue_count, std::vector<VkDeviceQueueCreateInfo> const queue_infos,
+				std::vector<const char*> const enabled_extension_names, VkPhysicalDeviceFeatures* const p_features);
+
+			// Command pools created with usage of this device.
+			vec<VkCommandPool> command_pools{};
+
+			void createCommandPool(uint32_t queue_family_index, VkCommandPoolCreateFlagBits* p_flags_bitmask,
+				VkAllocationCallbacks* p_allocator);
+
+			// TODO - documentate queue
+			struct Queue
+			{
+				// Pointer to a parent struct
+				LogicalDevice* p_parent;
+				// Vulkan handle of this wrap.
+				VkQueue vk_handle;
+
+				Queue(LogicalDevice* p_parent, VkDeviceQueueCreateFlags flags, uint32_t queue_family_index, 
+					const float* p_priorities, uint32_t count);
+
+			}; // Queue
+			vec<Queue> queues{};
+
+		}; // LogicalDevice
+		vec<LogicalDevice> logical_devices{};
+
+		// Device layers available for current physical device.
+		vec<VkLayerProperties> layer_props{};
+		void enumerateDeviceLayers();
+
+		// I don't remember what does it stands for
+		VkPhysicalDeviceMemoryProperties mem_props{};
+
+		// Queue families available on a physical device
+		vec<VkQueueFamilyProperties> queue_families{};
+		void enumerateQueueFamilyProps();
+
+		VkPhysicalDeviceFeatures getFeatures();
+
+		// Enumerates all attached graphical processing units, or other
+		// devices that are recognized as suitable for rendering by Vulkan.
+		static void enumerateAttached();
+
+	private:
+
+		PhysicalDevice(VkPhysicalDevice vk_handle);
+
+	}; // PhysicalDevice
+
 	static class ExternalAccess
 	{
 	private:
 		friend class Window;
 		static void addWindow(Window* window);
 	};
+
+	// Physical devices found by current Vulkan instance.
+	vec<PhysicalDevice> phys_devices;
+
+	//!// List of properties of physical device groups
+	vec<VkPhysicalDeviceGroupProperties> phys_device_groups;
 
 	static unsigned int getWinQuantity();
 
@@ -32,8 +122,6 @@ namespace AppStructure
 	replaced with those of CorEngine.
 	*/
 	void initVulkan(VkInstanceCreateInfo* info, VkAllocationCallbacks* callbacks);
-
-
 
 	static void finalCleanup();
 

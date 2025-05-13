@@ -12,24 +12,6 @@
 #include "WindowManager.h"
 
 #include "CorEngine.h"
-/*
-void foo()
-{
-    
-    
-
-    
-
-    AppStructure::addWindow(&windw);
-
-    //std::chrono::duration<int, std::ratio<1, 1000>> duration_ok{ 3000 };
-
-    //std::this_thread::sleep_for(duration_ok);
-
-    AppStructure::cleanup();
-}
-*/
-
 
 
 class SpecialHeart : public Heart
@@ -72,6 +54,8 @@ int main()
 
 	unsigned int ver[4] = { 0,0,0,1 };
 	AppStructure::initVulkan(&name[0], ver);
+
+    
 
 
     demonheart.start();

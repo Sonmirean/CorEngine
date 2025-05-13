@@ -1,10 +1,13 @@
 
 #include "Debug.h"
 
-void ensureVkSuccess(VkResult res)
+void _ensureVkSuccess(VkResult res)
 {
-	res == VK_SUCCESS ? nullptr : 
-		throw std::exception("Vulkan function thrown an unknown error.", res);
+	if (res != VK_SUCCESS)
+	{
+		std::cout << "Vulkan function thrown an error. VkResult code: " << res << std::endl;
+		throw std::exception("Vulkan function thrown an error.");
+	}
 }
 
 void printPhysicalDeviceProps(VkPhysicalDeviceProperties* props)
