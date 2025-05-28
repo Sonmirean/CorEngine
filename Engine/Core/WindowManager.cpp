@@ -49,7 +49,6 @@ Window::Window(WindowProperties* props) :
 
 	glfwShowWindow(handle);
 
-	AppStructure::ExternalAccess::addWindow(this);
 }
 
 Window::~Window()

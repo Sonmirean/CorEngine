@@ -1,7 +1,7 @@
 
 #include "Debug.h"
 
-void _ensureVkSuccess(VkResult res)
+void ensureVkSuccess(VkResult res)
 {
 	if (res != VK_SUCCESS)
 	{

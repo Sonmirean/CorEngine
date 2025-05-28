@@ -8,12 +8,12 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "AppStructure.h"
+//#include "AppStructure.h"
 #include "WindowManager.h"
 
 #include "CorEngine.h"
 
-
+/*
 class SpecialHeart : public Heart
 {
 
@@ -26,10 +26,11 @@ public:
        
     }
 };
+*/
 
 int main()
 {
-
+    /*
     glfwInit();
 
     char name[] = "Window to hell";
@@ -43,7 +44,7 @@ int main()
     prps.y_pos = 400;
 
 
-    glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
+    //glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
      
     //Window win1 = Window(&prps);
 
@@ -66,7 +67,7 @@ int main()
         
     }
     
-    
+    */
     return EXIT_SUCCESS;
 }
 

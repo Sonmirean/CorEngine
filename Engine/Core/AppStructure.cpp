@@ -10,203 +10,199 @@
 #include "Types.h"
 #include "Debug.h"
 
-namespace AppStructure
+void PhysicalDevice::enumerateQueueFamilies()
+{
+	uint32_t queue_family_props_count;
+	vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, nullptr);
+
+	queue_families.reserve(queue_family_props_count);
+	vec<VkQueueFamilyProperties> props = vec<VkQueueFamilyProperties>(queue_family_props_count);
+
+	vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, props.data());
+
+	for (size_t i = 0; i < queue_family_props_count; i++)
+	{
+		queue_families.emplace_back(this, props[i], i);
+	}
+} // void PhysicalDevice::enumerateQueueFamilies()
+
+
+void PhysicalDevice::enumerateDeviceLayers()
+{
+	uint32_t layer_count;
+	ensureVkSuccess(vkEnumerateDeviceLayerProperties(vk_handle, &layer_count, nullptr));
+	if (layer_count != 0)
+	{
+		layer_props.reserve(layer_count);
+		ensureVkSuccess(vkEnumerateDeviceLayerProperties(vk_handle, &layer_count, layer_props.data()));
+	}
+	else
+	{
+		throw std::exception("Error - No available layers found for current device.");
+	}
+} // PhysicalDevice::enumerateDeviceLayers()
+
+VkPhysicalDeviceFeatures PhysicalDevice::getFeatures()
+{
+	VkPhysicalDeviceFeatures features;
+	vkGetPhysicalDeviceFeatures(vk_handle, &features);
+	return features;
+} // VkPhysicalDeviceFeatures PhysicalDevice::getFeatures()
+
+void PhysicalDevice::enumerateAll()
+{
+	uint32_t phys_devices_found;
+	ensureVkSuccess(vkEnumeratePhysicalDevices(Application::instance, &phys_devices_found, nullptr));
+	if (phys_devices_found > 0)
+	{
+		vec<VkPhysicalDevice> raw_devices(phys_devices_found);
+		ensureVkSuccess(vkEnumeratePhysicalDevices(Application::instance, &phys_devices_found, raw_devices.data()));
+		Application::phys_devices.reserve(phys_devices_found);
+		for (unsigned int i = 0; i < phys_devices_found; i++)
+		{
+			Application::phys_devices.emplace_back(raw_devices[i]);
+		}
+	}
+	else
+	{
+		throw std::exception("Error - No suitable graphical devices found.");
+	}
+} // void PhysicalDevice::enumerateAll()
+
+PhysicalDevice::PhysicalDevice(VkPhysicalDevice vk_handle) : vk_handle(vk_handle)
+{
+	// Automatically enumerates all necessary things to work with that device.
+	enumerateDeviceLayers();
+	enumerateQueueFamilies();
+} // PhysicalDevice::PhysicalDevice()
+
+QueueFamily::QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties props, uint32_t index)
+	: p_parent(p_parent), props(props), index(index) {} // QueueFamily::QueueFamily()
+
+uint32_t QueueFamily::getIndex() 
+{ 
+	return index; 
+} // QueueFamily::getIndex() 
+
+Queue::Queue(VkQueue vk_handle, QueueFamily* const p_parent, VkDeviceQueueCreateInfo const info)
+	: p_parent(p_parent) {} // Queue::Queue()
+
+LogicalDevice::LogicalDevice(PhysicalDevice* p_parent, VkDeviceCreateInfo* p_info, VkAllocationCallbacks* p_allocator)
+	: p_parent(p_parent)
 {
 
-	PhysicalDevice::LogicalDevice::LogicalDevice(PhysicalDevice* p_parent, uint32_t queue_count, std::vector<VkDeviceQueueCreateInfo> const queue_infos,
-		std::vector<const char*> const enabled_extension_names, VkPhysicalDeviceFeatures* const p_features)
-		// TODO - add custom allocator support
+	ensureVkSuccess(vkCreateDevice(p_parent->vk_handle, p_info, p_allocator, &vk_handle));
+
+	//p_info.
+
+	// TODO 
+
+	/*for (size_t i = 0; i < queue_count; i++)
 	{
-		p_parent = p_parent;
-		VkDeviceCreateInfo info{};
-		info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		info.queueCreateInfoCount = queue_count;
-		info.pQueueCreateInfos = queue_infos.data();
-		info.enabledExtensionCount = enabled_extension_names.size();
-		info.ppEnabledExtensionNames = enabled_extension_names.data();
-		info.pEnabledFeatures = p_features;
+		VkQueue queue;
+		uint32_t queue_index;
+		vkGetDeviceQueue(vk_handle, 0, &queue_index);
 
-		_ensureVkSuccess(vkCreateDevice(p_parent->vk_handle, &info, nullptr, &vk_handle));
-		p_parent->logical_devices.push_back(*this);
-	} // PhysicalDevice::LogicalDevice::LogicalDevice()
+		desired_queue_families[i]->queues.emplace_back(, desired_queue_families[i], queue_infos[i]);
+	}*/
 
-	PhysicalDevice::LogicalDevice::CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family, VkCommandPoolCreateFlagBits* p_flags_bitmask,
-		VkAllocationCallbacks* p_allocator)
-		: p_parent(p_parent)
+	p_parent->logical_devices.push_back(std::move(*this));
+} // LogicalDevice::LogicalDevice()
+
+CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family, 
+	VkCommandPoolCreateFlagBits* p_flags_bitmask, VkAllocationCallbacks* p_allocator)
+	: p_parent(p_parent)
+{
+	VkCommandPool pool;
+	VkCommandPoolCreateInfo pool_info{};
+	pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	pool_info.flags = *p_flags_bitmask;
+	pool_info.queueFamilyIndex = p_queue_family->index;
+
+	ensureVkSuccess(vkCreateCommandPool(p_parent->vk_handle, &pool_info, p_allocator, &pool));
+	vk_handle = pool;
+	thread_id = std::this_thread::get_id();
+	p_parent->command_pools.push_back(std::move(*this));
+} // CommandPool::CommandPool()
+
+namespace
+{
+	VkInstanceCreateInfo* createVkInfo(VkApplicationInfo app_info)
 	{
-		VkCommandPool pool;
-		VkCommandPoolCreateInfo pool_info{};
-		pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		pool_info.flags = *p_flags_bitmask;
-		pool_info.queueFamilyIndex = p_queue_family->index;
+		VkInstanceCreateInfo createInfo{};
 
-		_ensureVkSuccess(vkCreateCommandPool(p_parent->vk_handle, &pool_info, p_allocator, &pool));
-		vk_handle = pool;
-		thread_id = std::this_thread::get_id();
-		p_parent->command_pools.push_back(*this);
-	} // PhysicalDevice::LogicalDevice::CommandPool::CommandPool()
+		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+		createInfo.pApplicationInfo = &app_info;
+		uint32_t glfwExtensionCount = 0;
+		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+		createInfo.enabledExtensionCount = glfwExtensionCount;
+		createInfo.ppEnabledExtensionNames = glfwExtensions;
 
-
-	PhysicalDevice::QueueFamily::Queue::Queue(LogicalDevice* p_parent, VkDeviceQueueCreateFlags flags, 
-		uint32_t queue_family_index, const float* p_priorities, uint32_t count)
-		: p_parent(p_parent)
-	{
-		if (queue_family_index <= p_parent->p_parent->queue_families.size())
-		{
-			VkDeviceQueueCreateInfo info{};
-			info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			info.flags = flags;
-			info.queueCount = count;
-			info.queueFamilyIndex = queue_family_index;
-			info.pQueuePriorities = p_priorities;
-		}
-		else
-		{
-			throw std::exception("Error - Desired queue family is absent on current GPU.");
-		}
-	}; // PhysicalDevice::Queue::Queue()
-
-
-	void PhysicalDevice::enumerateDeviceLayers()
-	{
-		uint32_t layer_count;
-		_ensureVkSuccess(vkEnumerateDeviceLayerProperties(vk_handle, &layer_count, nullptr));
-		if (layer_count != 0)
-		{
-			layer_props.reserve(layer_count);
-			_ensureVkSuccess(vkEnumerateDeviceLayerProperties(vk_handle, &layer_count, layer_props.data()));
-			CORENGINE_DEBUG_PRINT(layer_count)
-		}
-		else
-		{
-			throw std::exception("Error - No available layers found for current device.");
-		}
-	} // PhysicalDevice::enumerateDeviceLayers()
-
-	void PhysicalDevice::enumerateQueueFamilyProps()
-	{
-		uint32_t queue_family_props_count;
-		vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, nullptr);
-
-		queue_families = vec<VkQueueFamilyProperties>(queue_family_props_count);
-		vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, queue_families.data());
-
-		CORENGINE_DEBUG_PRINT(queue_family_props_count);
-	} // PhysicalDevice::enumerateQueueFamilyProps()
-
-	VkPhysicalDeviceFeatures PhysicalDevice::getFeatures()
-	{
-		VkPhysicalDeviceFeatures features;
-		vkGetPhysicalDeviceFeatures(vk_handle, &features);
-		return features;
+		return &createInfo;
 	}
-
-	// Enumerates all attached graphical processing units, or other
-	// devices that are recognized as suitable for rendering by Vulkan.
-	void PhysicalDevice::enumerateAttached()
+	VkApplicationInfo createVkAppInfo(const char* app_name, uint32_t app_version[4])
 	{
-		uint32_t phys_devices_found;
-		_ensureVkSuccess(vkEnumeratePhysicalDevices(instance, &phys_devices_found, nullptr));
-		if (phys_devices_found > 0)
-		{
-			vec<VkPhysicalDevice> raw_devices(phys_devices_found);
-			_ensureVkSuccess(vkEnumeratePhysicalDevices(instance, &phys_devices_found, raw_devices.data()));
-			phys_devices.reserve(phys_devices_found);
-			for (unsigned int i = 0; i < phys_devices_found; i++)
-			{
-				PhysicalDevice phys_device = PhysicalDevice(raw_devices[i]);
-				phys_devices.push_back(phys_device);
-			}
-			CORENGINE_DEBUG_PRINT(phys_devices_found)
-		}
-		else
-		{
-			throw std::exception("Error - No attached suitable physical devices found.");
-		}
-	} // PhysicalDevice::enumerateAttached()
+		VkApplicationInfo appInfo{};
 
-	PhysicalDevice::PhysicalDevice(VkPhysicalDevice vk_handle) : vk_handle(vk_handle)
-	{
-		enumerateQueueFamilyProps();
+		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+		appInfo.pApplicationName = app_name;
+		appInfo.applicationVersion = VK_MAKE_API_VERSION(app_version[0], app_version[1],
+			app_version[2], app_version[3]);
+		appInfo.apiVersion = VK_API_VERSION_1_0;
+		appInfo.pEngineName = "CorEngine";
+		appInfo.engineVersion = VK_MAKE_API_VERSION(CORENGINE_VERSION_MAJOR,
+			CORENGINE_VERSION_MINOR, CORENGINE_VERSION_PATCH, CORENGINE_VERSION_BUILD);
+
+		return appInfo;
 	}
+} // namespace
 
-	void enumeratePhysDeviceGroupProps()
+PhysicalDeviceGroup::PhysicalDeviceGroup(VkPhysicalDeviceGroupProperties props)
+	: props(props) { }
+
+void PhysicalDeviceGroup::enumerateAll()
+{
+	uint32_t group_count;
+	vkEnumeratePhysicalDeviceGroups(Application::instance, &group_count, nullptr);
+	vec<VkPhysicalDeviceGroupProperties> props(group_count);
+	vkEnumeratePhysicalDeviceGroups(Application::instance, &group_count, props.data());
+
+	for (size_t i = 0; i < group_count; i++)
 	{
-		uint32_t phys_device_group_props_count;
-		_ensureVkSuccess(vkEnumeratePhysicalDeviceGroups(AppStructure::instance, &phys_device_group_props_count, nullptr));
-		if (phys_device_group_props_count != 0)
+		PhysicalDeviceGroup group(props[i]);
+
+		for (size_t i = 0; i < group.props.physicalDeviceCount; i++)
 		{
-			AppStructure::phys_device_groups.reserve(phys_device_group_props_count);
-			_ensureVkSuccess(vkEnumeratePhysicalDeviceGroups(AppStructure::instance, &phys_device_group_props_count, AppStructure::phys_device_groups.data()));
-
-			CORENGINE_DEBUG_PRINT(phys_device_group_props_count);
-		}
-	} // enumeratePhysDeviceGroupProps()
-
-	namespace
-	{
-		vec<sptr<Window>> app_windows;
-
-		VkInstanceCreateInfo* createVkInfo(VkApplicationInfo app_info)
-		{
-			VkInstanceCreateInfo createInfo{};
-
-			createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-			createInfo.pApplicationInfo = &app_info;
-			uint32_t glfwExtensionCount = 0;
-			const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-			createInfo.enabledExtensionCount = glfwExtensionCount;
-			createInfo.ppEnabledExtensionNames = glfwExtensions;
-
-			return &createInfo;
-		}
-		VkApplicationInfo createVkAppInfo(const char* app_name, uint32_t app_version[4])
-		{
-			VkApplicationInfo appInfo{};
-
-			appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-			appInfo.pApplicationName = app_name;
-			appInfo.applicationVersion = VK_MAKE_API_VERSION(app_version[0], app_version[1],
-				app_version[2], app_version[3]);
-			appInfo.apiVersion = VK_API_VERSION_1_0;
-			appInfo.pEngineName = "CorEngine";
-			appInfo.engineVersion = VK_MAKE_API_VERSION(CORENGINE_VERSION_MAJOR,
-				CORENGINE_VERSION_MINOR, CORENGINE_VERSION_PATCH,
-				CORENGINE_VERSION_BUILD);
-
-			return appInfo;
+			PhysicalDevice device(group.props.physicalDevices[i]);
+			group.p_physical_devices.push_back(std::move(&device));
 		}
 
-	}// namespace
-
-	void AppStructure::ExternalAccess::addWindow(Window* window)
-	{
-		app_windows.push_back(std::shared_ptr<Window>(window));
-		window->id = app_windows.size() - 1;
-	}
-
-	unsigned int getWinQuantity()
-	{
-		return app_windows.size();
-	}
-
-	void initVulkan(const char* app_name, uint32_t app_version[4])
-	{
-		_ensureVkSuccess(vkCreateInstance(createVkInfo(createVkAppInfo(app_name, app_version)), nullptr, &AppStructure::instance));
-
-		enumeratePhysDeviceGroupProps();
-		AppStructure::PhysicalDevice::enumerateAttached();
-	}
-
-	void finalCleanup()
-	{
-		vkDestroyInstance(AppStructure::instance, nullptr);
-
-		for (size_t i = 0; i < app_windows.size(); i++)
-		{
-			app_windows[i].reset();
-		}
-
-		glfwTerminate();
+		Application::phys_device_groups.push_back(std::move(group));
 	}
 }
+
+size_t Application::getWinQuantity()
+{
+	return app_windows.size();
+}
+
+void Application::initVulkan(const char* app_name, uint32_t app_version[4])
+{
+	ensureVkSuccess(vkCreateInstance(createVkInfo(createVkAppInfo(app_name, app_version)), nullptr, &Application::instance));
+
+	PhysicalDeviceGroup::enumerateAll();
+	PhysicalDevice::enumerateAll();
+}
+
+void Application::finalCleanup()
+{
+	vkDestroyInstance(Application::instance, nullptr);
+
+	for (size_t i = 0; i < app_windows.size(); i++)
+	{
+		app_windows[i].reset();
+	}
+
+	glfwTerminate();
+}
+

@@ -8,7 +8,7 @@
 #include <GLFW/glfw3.h>]
 #include <iostream>
 
-extern void _ensureVkSuccess(VkResult res);
+extern void ensureVkSuccess(VkResult res);
 
 extern void printPhysicalDeviceProps(VkPhysicalDeviceProperties* props);
 
