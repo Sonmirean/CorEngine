@@ -23,7 +23,7 @@ public:
 
 	void render() override
 	{
-		std::cout << getFps() << std::endl;
+		std::cout << std::this_thread::get_id() << std::endl;
 	}
 };
 

@@ -95,8 +95,7 @@ void printPhysicalDeviceProps(VkPhysicalDeviceProperties* props)
 		"X: " << props->limits.maxComputeWorkGroupSize[0] <<
 		" Y: " << props->limits.maxComputeWorkGroupSize[1] <<
 		" Z: " << props->limits.maxComputeWorkGroupSize[2]
-		// I've surely gone mad.
-		// A sane one wouldn't ever sacrifice their time for such a torture.
+
 		<< "\n" "Subpixel precision bits: " << props->limits.subPixelPrecisionBits
 		<< "\n" "Subtexel precision bits: " << props->limits.subTexelPrecisionBits
 		<< "\n" "Mipmap precision bits: " << props->limits.mipmapPrecisionBits
@@ -113,7 +112,7 @@ void printPhysicalDeviceProps(VkPhysicalDeviceProperties* props)
 		"Min: " << props->limits.maxViewportDimensions[0] <<
 		" Max: " << props->limits.maxViewportDimensions[1]
 		<< "\n" "Viewport bounds subpixel precision bits: " << props->limits.viewportSubPixelBits
-		// v Must be a power of 2.
+
 		<< "\n" "Minimum host address space memory alignment: " << props->limits.minMemoryMapAlignment
 		<< "\n" "Minimum texel buffer offset alignment: " << props->limits.minTexelBufferOffsetAlignment
 		<< "\n" "Minimum uniform buffer offset alignment: " << props->limits.minUniformBufferOffsetAlignment

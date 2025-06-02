@@ -30,6 +30,7 @@ private:
 	friend struct PhysicalDevice;
 	friend struct LogicalDevice;
 	friend struct CommandPool;
+	friend struct Queue;
 
 	// Queues belonging to this family.
 	vec<Queue> queues;
@@ -80,22 +81,48 @@ private:
 	void enumerateQueueFamilies();
 
 	// Vulkan handle of this wrap.
-	VkPhysicalDevice* p_vk_handle;
+	VkPhysicalDevice vk_handle;
 
 }; // struct PhysicalDevice
 
 
 /**
-* Command pool is a pool of memory allocated for command buffers.
+* Command pool is a pool of memory from which command buffers are allocated.
 * A single command pool must NOT be used concurrently in multiple threads.
 */
 struct CommandPool
 {
 public:
+
+	// Returns unused memory to the system.
+	// Does not affect allocated buffers.
+	// May be expensive, do not use frequently.
+	void trim();
+
+	/** Returns back all the resources from all the
+	* command buffers allocated from this pool.
+	* 
+	* @param VkCommandPoolResetFlags flags - Specifies behavior of reset. For now, it must be 0x00000001.
+	*/
+	void reset(VkCommandPoolResetFlags flags);
+
+	/** Allocates one or more command buffers.
+	* 
+	* @param std::vector<const VkCommandBufferAllocateInfo> info - Specifies info for each command buffer to be allocated 
+	(as well as quantity of buffers).
+	*/
+	void allocBuffers(std::vector<const VkCommandBufferAllocateInfo> info);
+
+private:
 	// Pointer to a parent struct.
 	LogicalDevice* p_parent;
 	// Vulkan handle of this wrap.
-	VkCommandPool* p_vk_handle;
+	VkCommandPool vk_handle;
+	// Queue family index.
+	uint32_t queue_family_index;
+
+	// Flags specifying behavior of the pool and its buffers.
+	VkCommandPoolCreateFlags flags;
 
 	/**
 	* Command pool is a pool of memory allocated for command buffers.
@@ -107,13 +134,12 @@ public:
 	CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family, VkCommandPoolCreateFlagBits* p_flags_bitmask,
 		VkAllocationCallbacks* p_allocator);
 
-private:
+	~CommandPool();
 
 	// Pointer to a thread which owns this command pool.
-	// If thread is main, ...
 	std::thread::id thread_id;
-	// Command buffers allocated in this command pool.
-	vec<CommandBuffer> cmd_bufs;
+	// Command buffers allocated from this command pool.
+	vec<CommandBuffer> command_buffers;
 
 
 }; //struct CommandPool
@@ -126,10 +152,11 @@ struct CommandBuffer
 public:
 	// TODO - something
 private:
+	friend struct CommandPool;
 	// Pointer to a parent struct.
 	CommandPool* p_parent;
 	// Vulkan handle of this wrap.
-	VkCommandBuffer* p_vk_handle;
+	VkCommandBuffer vk_handle;
 };
 
 /**
@@ -140,10 +167,11 @@ struct Queue
 public:
 
 private:
+	friend struct LogicalDevice;
 	// Pointer to a parent struct.
 	QueueFamily* p_parent;
 	// Vulkan handle of this wrap.
-	VkQueue* p_vk_handle;
+	VkQueue vk_handle;
 
 	// Index of a queue in a family.
 
@@ -152,7 +180,7 @@ private:
 	// Global priority of a queue.
 	VkQueueGlobalPriority global_prior;
 
-	Queue(VkQueue vk_handle, QueueFamily* const p_parent, VkDeviceQueueCreateInfo const info);
+	Queue(QueueFamily* p_parent);
 
 }; // struct Queue
 
@@ -177,13 +205,14 @@ public:
 
 private:
 	friend struct CommandPool;
-	// Command pools created with usage of this device.
-	vec<CommandPool> command_pools{};
 
-	// Vulkan handle of this wrap.
-	VkDevice* p_vk_handle;
 	// Pointer to a parent struct.
 	PhysicalDevice* p_parent;
+	// Vulkan handle of this wrap.
+	VkDevice vk_handle;
+
+	// Command pools created with usage of this device.
+	vec<CommandPool> command_pools{};
 
 }; // struct LogicalDevice
 

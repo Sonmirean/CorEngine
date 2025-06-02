@@ -19,9 +19,9 @@ QueueFamily::QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties* p_pr
 void PhysicalDevice::enumerateQueueFamilies()
 {
 	uint32_t queue_family_props_count;
-	vkGetPhysicalDeviceQueueFamilyProperties(*p_vk_handle, &queue_family_props_count, nullptr);
+	vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, nullptr);
 	vec<VkQueueFamilyProperties> props(queue_family_props_count);
-	vkGetPhysicalDeviceQueueFamilyProperties(*p_vk_handle, &queue_family_props_count, props.data());
+	vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, props.data());
 
 	for (size_t i = 0; i < queue_family_props_count; i++)
 	{
@@ -34,10 +34,10 @@ void PhysicalDevice::enumerateQueueFamilies()
 void PhysicalDevice::enumerateDeviceLayers()
 {
 	uint32_t layer_count;
-	ensureVkSuccess(vkEnumerateDeviceLayerProperties(*p_vk_handle, &layer_count, nullptr));
+	ensureVkSuccess(vkEnumerateDeviceLayerProperties(vk_handle, &layer_count, nullptr));
 	if (layer_count != 0)
 	{
-		ensureVkSuccess(vkEnumerateDeviceLayerProperties(*p_vk_handle, &layer_count, layer_props.data()));
+		ensureVkSuccess(vkEnumerateDeviceLayerProperties(vk_handle, &layer_count, layer_props.data()));
 	}
 	else
 	{
@@ -48,7 +48,7 @@ void PhysicalDevice::enumerateDeviceLayers()
 VkPhysicalDeviceFeatures PhysicalDevice::getFeatures()
 {
 	VkPhysicalDeviceFeatures features;
-	vkGetPhysicalDeviceFeatures(*p_vk_handle, &features);
+	vkGetPhysicalDeviceFeatures(vk_handle, &features);
 	return features;
 } // VkPhysicalDeviceFeatures PhysicalDevice::getFeatures()
 
@@ -72,7 +72,7 @@ void PhysicalDevice::enumerateAll()
 	}
 } // void PhysicalDevice::enumerateAll()
 
-PhysicalDevice::PhysicalDevice(VkPhysicalDevice vk_handle) : p_vk_handle(&vk_handle)
+PhysicalDevice::PhysicalDevice(VkPhysicalDevice vk_handle) : vk_handle(vk_handle)
 {
 	// Automatically enumerates all necessary things to work with that device.
 	enumerateDeviceLayers();
@@ -84,33 +84,66 @@ uint32_t QueueFamily::getIndex()
 	return index; 
 } // QueueFamily::getIndex() 
 
-Queue::Queue(VkQueue vk_handle, QueueFamily* const p_parent, VkDeviceQueueCreateInfo const info)
-	: p_parent(p_parent) {} // Queue::Queue()
+Queue::Queue(QueueFamily* p_parent)
+	: p_parent(p_parent) 
+{
+	p_parent->queues.push_back(std::move(*this));
+} // Queue::Queue()
 
 LogicalDevice::LogicalDevice(PhysicalDevice* p_parent, VkDeviceCreateInfo info, VkAllocationCallbacks allocator)
 	: p_parent(p_parent)
 {
-	info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	//info.
+	ensureVkSuccess(vkCreateDevice(p_parent->vk_handle, &info, &allocator, &vk_handle));
 
-		// TODO - DAMNIT
+	p_parent->enumerateQueueFamilies();
 
-	//ensureVkSuccess(vkCreateDevice(p_parent->vk_handle, &info, &allocator, &vk_handle));
+	for (size_t i = 0; i < info.queueCreateInfoCount; i++)
+	{
+		Queue queue(&p_parent->queue_families[info.pQueueCreateInfos[i].queueFamilyIndex]);
+	}
+	for (size_t j = 0; j < p_parent->queue_families.size(); j++)
+	{
+		for (size_t l = 0; l < p_parent->queue_families[j].queues.size(); l++)
+		{
+			p_parent->queue_families[j].queues[l].index = l;
+			VkQueue raw_queue;
+			vkGetDeviceQueue(vk_handle, p_parent->queue_families[j].index, l, &raw_queue);
+			p_parent->queue_families[j].queues[l].vk_handle = raw_queue;
+		}
+	}
 
-	//for (size_t i = 0; i < info.queueCreateInfoCount; i++)
-	//{
-	//	VkQueue queue;
-
-	//	vkGetDeviceQueue(vk_handle, info.pQueueCreateInfos[i].queueFamilyIndex, info.pQueueCreateInfos[i].mmmmmmm, &queue);
-
-	//}
-
-	//p_parent->logical_devices.push_back(std::move(*this));
+	p_parent->logical_devices.push_back(std::move(*this));
 } // LogicalDevice::LogicalDevice()
 
-CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family, 
+void CommandPool::trim()
+{
+	vkTrimCommandPool(p_parent->vk_handle, vk_handle, 0);
+} // void CommandPool::trim()
+
+void CommandPool::reset(VkCommandPoolResetFlags flags)
+{
+	ensureVkSuccess(vkResetCommandPool(p_parent->vk_handle, vk_handle, flags));
+} // void CommandPool::reset()
+
+void CommandPool::allocBuffers(std::vector<const VkCommandBufferAllocateInfo> info)
+{
+	vec<VkCommandBuffer> raw_buffers(info.size());
+	ensureVkSuccess(vkAllocateCommandBuffers(p_parent->vk_handle, info.data(), raw_buffers.data()));
+
+	for (size_t i = 0; i < info.size(); i++)
+	{
+		command_buffers[i].vk_handle = raw_buffers[i];
+	}
+} // void CommandPool::allocBuffers()
+
+CommandPool::~CommandPool()
+{
+	vkDestroyCommandPool(p_parent->vk_handle, vk_handle, nullptr);
+} // CommandPool::~CommandPool()
+
+CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family,
 	VkCommandPoolCreateFlagBits* p_flags_bitmask, VkAllocationCallbacks* p_allocator)
-	: p_parent(p_parent)
+	: p_parent(p_parent), queue_family_index(p_queue_family->index)
 {
 	VkCommandPool pool;
 	VkCommandPoolCreateInfo pool_info{};
@@ -118,8 +151,8 @@ CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family,
 	pool_info.flags = *p_flags_bitmask;
 	pool_info.queueFamilyIndex = p_queue_family->index;
 
-	ensureVkSuccess(vkCreateCommandPool(*p_parent->p_vk_handle, &pool_info, p_allocator, &pool));
-	p_vk_handle = &pool;
+	ensureVkSuccess(vkCreateCommandPool(p_parent->vk_handle, &pool_info, p_allocator, &pool));
+	vk_handle = pool;
 	thread_id = std::this_thread::get_id();
 	p_parent->command_pools.push_back(std::move(*this));
 } // CommandPool::CommandPool()
@@ -154,7 +187,7 @@ namespace
 
 		return appInfo;
 	}
-} // namespace
+} // anonymous namespace
 
 PhysicalDeviceGroup::PhysicalDeviceGroup(VkPhysicalDeviceGroupProperties props)
 	: p_props(&props) { }
@@ -173,7 +206,7 @@ void PhysicalDeviceGroup::enumerateAll()
 		for (size_t i = 0; i < group.p_props->physicalDeviceCount; i++)
 		{
 			PhysicalDevice device(group.p_props->physicalDevices[i]);
-			group.p_physical_devices.push_back(std::move(&device));
+			group.p_physical_devices.push_back(&device);
 		}
 		group.p_physical_devices.shrink_to_fit();
 		Application::phys_device_groups.push_back(std::move(group));
