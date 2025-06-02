@@ -10,31 +10,34 @@
 #include "Types.h"
 #include "Debug.h"
 
+QueueFamily::QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties* p_props, uint32_t index)
+	: p_parent(p_parent), props(*p_props), index(index)
+{
+
+} // QueueFamily::QueueFamily()
+
 void PhysicalDevice::enumerateQueueFamilies()
 {
 	uint32_t queue_family_props_count;
-	vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, nullptr);
-
-	queue_families.reserve(queue_family_props_count);
-	vec<VkQueueFamilyProperties> props = vec<VkQueueFamilyProperties>(queue_family_props_count);
-
-	vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, props.data());
+	vkGetPhysicalDeviceQueueFamilyProperties(*p_vk_handle, &queue_family_props_count, nullptr);
+	vec<VkQueueFamilyProperties> props(queue_family_props_count);
+	vkGetPhysicalDeviceQueueFamilyProperties(*p_vk_handle, &queue_family_props_count, props.data());
 
 	for (size_t i = 0; i < queue_family_props_count; i++)
 	{
-		queue_families.emplace_back(this, props[i], i);
+		queue_families.push_back(std::move(QueueFamily(this, &props[i], i)));
 	}
+	queue_families.shrink_to_fit();
 } // void PhysicalDevice::enumerateQueueFamilies()
 
 
 void PhysicalDevice::enumerateDeviceLayers()
 {
 	uint32_t layer_count;
-	ensureVkSuccess(vkEnumerateDeviceLayerProperties(vk_handle, &layer_count, nullptr));
+	ensureVkSuccess(vkEnumerateDeviceLayerProperties(*p_vk_handle, &layer_count, nullptr));
 	if (layer_count != 0)
 	{
-		layer_props.reserve(layer_count);
-		ensureVkSuccess(vkEnumerateDeviceLayerProperties(vk_handle, &layer_count, layer_props.data()));
+		ensureVkSuccess(vkEnumerateDeviceLayerProperties(*p_vk_handle, &layer_count, layer_props.data()));
 	}
 	else
 	{
@@ -45,7 +48,7 @@ void PhysicalDevice::enumerateDeviceLayers()
 VkPhysicalDeviceFeatures PhysicalDevice::getFeatures()
 {
 	VkPhysicalDeviceFeatures features;
-	vkGetPhysicalDeviceFeatures(vk_handle, &features);
+	vkGetPhysicalDeviceFeatures(*p_vk_handle, &features);
 	return features;
 } // VkPhysicalDeviceFeatures PhysicalDevice::getFeatures()
 
@@ -57,11 +60,11 @@ void PhysicalDevice::enumerateAll()
 	{
 		vec<VkPhysicalDevice> raw_devices(phys_devices_found);
 		ensureVkSuccess(vkEnumeratePhysicalDevices(Application::instance, &phys_devices_found, raw_devices.data()));
-		Application::phys_devices.reserve(phys_devices_found);
-		for (unsigned int i = 0; i < phys_devices_found; i++)
+		for (size_t i = 0; i < phys_devices_found; i++)
 		{
-			Application::phys_devices.emplace_back(raw_devices[i]);
+			Application::phys_devices.push_back(std::move(PhysicalDevice(raw_devices[i])));
 		}
+		Application::phys_devices.shrink_to_fit();
 	}
 	else
 	{
@@ -69,15 +72,12 @@ void PhysicalDevice::enumerateAll()
 	}
 } // void PhysicalDevice::enumerateAll()
 
-PhysicalDevice::PhysicalDevice(VkPhysicalDevice vk_handle) : vk_handle(vk_handle)
+PhysicalDevice::PhysicalDevice(VkPhysicalDevice vk_handle) : p_vk_handle(&vk_handle)
 {
 	// Automatically enumerates all necessary things to work with that device.
 	enumerateDeviceLayers();
 	enumerateQueueFamilies();
 } // PhysicalDevice::PhysicalDevice()
-
-QueueFamily::QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties props, uint32_t index)
-	: p_parent(p_parent), props(props), index(index) {} // QueueFamily::QueueFamily()
 
 uint32_t QueueFamily::getIndex() 
 { 
@@ -87,26 +87,25 @@ uint32_t QueueFamily::getIndex()
 Queue::Queue(VkQueue vk_handle, QueueFamily* const p_parent, VkDeviceQueueCreateInfo const info)
 	: p_parent(p_parent) {} // Queue::Queue()
 
-LogicalDevice::LogicalDevice(PhysicalDevice* p_parent, VkDeviceCreateInfo* p_info, VkAllocationCallbacks* p_allocator)
+LogicalDevice::LogicalDevice(PhysicalDevice* p_parent, VkDeviceCreateInfo info, VkAllocationCallbacks allocator)
 	: p_parent(p_parent)
 {
+	info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	//info.
 
-	ensureVkSuccess(vkCreateDevice(p_parent->vk_handle, p_info, p_allocator, &vk_handle));
+		// TODO - DAMNIT
 
-	//p_info.
+	//ensureVkSuccess(vkCreateDevice(p_parent->vk_handle, &info, &allocator, &vk_handle));
 
-	// TODO 
+	//for (size_t i = 0; i < info.queueCreateInfoCount; i++)
+	//{
+	//	VkQueue queue;
 
-	/*for (size_t i = 0; i < queue_count; i++)
-	{
-		VkQueue queue;
-		uint32_t queue_index;
-		vkGetDeviceQueue(vk_handle, 0, &queue_index);
+	//	vkGetDeviceQueue(vk_handle, info.pQueueCreateInfos[i].queueFamilyIndex, info.pQueueCreateInfos[i].mmmmmmm, &queue);
 
-		desired_queue_families[i]->queues.emplace_back(, desired_queue_families[i], queue_infos[i]);
-	}*/
+	//}
 
-	p_parent->logical_devices.push_back(std::move(*this));
+	//p_parent->logical_devices.push_back(std::move(*this));
 } // LogicalDevice::LogicalDevice()
 
 CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family, 
@@ -119,8 +118,8 @@ CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family,
 	pool_info.flags = *p_flags_bitmask;
 	pool_info.queueFamilyIndex = p_queue_family->index;
 
-	ensureVkSuccess(vkCreateCommandPool(p_parent->vk_handle, &pool_info, p_allocator, &pool));
-	vk_handle = pool;
+	ensureVkSuccess(vkCreateCommandPool(*p_parent->p_vk_handle, &pool_info, p_allocator, &pool));
+	p_vk_handle = &pool;
 	thread_id = std::this_thread::get_id();
 	p_parent->command_pools.push_back(std::move(*this));
 } // CommandPool::CommandPool()
@@ -158,7 +157,7 @@ namespace
 } // namespace
 
 PhysicalDeviceGroup::PhysicalDeviceGroup(VkPhysicalDeviceGroupProperties props)
-	: props(props) { }
+	: p_props(&props) { }
 
 void PhysicalDeviceGroup::enumerateAll()
 {
@@ -171,14 +170,15 @@ void PhysicalDeviceGroup::enumerateAll()
 	{
 		PhysicalDeviceGroup group(props[i]);
 
-		for (size_t i = 0; i < group.props.physicalDeviceCount; i++)
+		for (size_t i = 0; i < group.p_props->physicalDeviceCount; i++)
 		{
-			PhysicalDevice device(group.props.physicalDevices[i]);
+			PhysicalDevice device(group.p_props->physicalDevices[i]);
 			group.p_physical_devices.push_back(std::move(&device));
 		}
-
+		group.p_physical_devices.shrink_to_fit();
 		Application::phys_device_groups.push_back(std::move(group));
 	}
+	
 }
 
 size_t Application::getWinQuantity()
@@ -200,7 +200,7 @@ void Application::finalCleanup()
 
 	for (size_t i = 0; i < app_windows.size(); i++)
 	{
-		app_windows[i].reset();
+		app_windows[i]->~Window();
 	}
 
 	glfwTerminate();

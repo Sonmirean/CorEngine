@@ -9,12 +9,6 @@
 #include "DimensionUtils.h"
 #include "Types.h"
 
-namespace AppStructure
-{
-	class ExternalAccess;
-}
-
-
 /**
 * Declares a set of properties to be used while creating a Window object.
 *
@@ -56,8 +50,6 @@ field of view, projection matrix, etc.
 
 Accepts any GLFW window hints called before creation.
 
-After creating, it automatically adds itself
-to current application structure as a shared_ptr.
 */
 class Window
 {
@@ -147,7 +139,7 @@ public:
 
 private:
 
-	friend class AppStructure::ExternalAccess;
+	friend struct Application;
 
 	unsigned int id;
 

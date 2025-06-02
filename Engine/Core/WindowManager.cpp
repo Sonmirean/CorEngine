@@ -47,6 +47,8 @@ Window::Window(WindowProperties* props) :
 	refreshProjMat();
 	setPos(x_pos, y_pos);
 
+	Application::app_windows.push_back(this);
+
 	glfwShowWindow(handle);
 
 }

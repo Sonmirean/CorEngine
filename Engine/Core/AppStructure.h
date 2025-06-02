@@ -11,8 +11,38 @@
 
 struct CommandBuffer;
 struct Queue;
-struct QueueFamily;
+struct PhysicalDevice;
 
+/**
+* Queue family is an union of queues with identical features.
+*/
+struct QueueFamily
+{
+public:
+	// Pointer to a parent struct.
+	PhysicalDevice* p_parent;
+
+	// Gets the index of this queue family.
+	// Index is necessary when creating anything with a queue family.
+	uint32_t getIndex();
+
+private:
+	friend struct PhysicalDevice;
+	friend struct LogicalDevice;
+	friend struct CommandPool;
+
+	// Queues belonging to this family.
+	vec<Queue> queues;
+
+	// Properties of this queue family
+	VkQueueFamilyProperties props;
+	// Index of this queue family. 
+	uint32_t index;
+
+	// Constructor for internal use.
+	QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties* p_props, uint32_t index);
+
+}; // struct QueueFamily
 
 /**
 * Physical device represents a connection to a graphical processing unit
@@ -37,11 +67,12 @@ private:
 	PhysicalDevice(VkPhysicalDevice vk_handle);
 
 	// Logical devices created with this physical device as a base.
-	vec<LogicalDevice> logical_devices{};
-	// Queue families available on a physical device
-	vec<QueueFamily> queue_families{};
+	vec<LogicalDevice> logical_devices;
+	// Queue families available on a physical device.
+	// Grouped in proper order.
+	vec<QueueFamily> queue_families;
 	// Device layers available for current physical device.
-	vec<VkLayerProperties> layer_props{};
+	vec<VkLayerProperties> layer_props;
 
 	// Enumerates all available layers for this device.
 	void enumerateDeviceLayers();
@@ -49,7 +80,7 @@ private:
 	void enumerateQueueFamilies();
 
 	// Vulkan handle of this wrap.
-	VkPhysicalDevice vk_handle;
+	VkPhysicalDevice* p_vk_handle;
 
 }; // struct PhysicalDevice
 
@@ -64,7 +95,7 @@ public:
 	// Pointer to a parent struct.
 	LogicalDevice* p_parent;
 	// Vulkan handle of this wrap.
-	VkCommandPool vk_handle;
+	VkCommandPool* p_vk_handle;
 
 	/**
 	* Command pool is a pool of memory allocated for command buffers.
@@ -79,9 +110,10 @@ public:
 private:
 
 	// Pointer to a thread which owns this command pool.
+	// If thread is main, ...
 	std::thread::id thread_id;
 	// Command buffers allocated in this command pool.
-	vec<CommandBuffer> cmd_bufs{};
+	vec<CommandBuffer> cmd_bufs;
 
 
 }; //struct CommandPool
@@ -97,7 +129,7 @@ private:
 	// Pointer to a parent struct.
 	CommandPool* p_parent;
 	// Vulkan handle of this wrap.
-	VkCommandBuffer vk_handle;
+	VkCommandBuffer* p_vk_handle;
 };
 
 /**
@@ -108,46 +140,22 @@ struct Queue
 public:
 
 private:
-
 	// Pointer to a parent struct.
 	QueueFamily* p_parent;
 	// Vulkan handle of this wrap.
-	VkQueue vk_handle;
+	VkQueue* p_vk_handle;
+
+	// Index of a queue in a family.
+
+	uint32_t index;
+
+	// Global priority of a queue.
+	VkQueueGlobalPriority global_prior;
 
 	Queue(VkQueue vk_handle, QueueFamily* const p_parent, VkDeviceQueueCreateInfo const info);
 
 }; // struct Queue
 
-/**
-* Queue family is an union of queues with identical features.
-*/
-struct QueueFamily
-{
-public:
-	// Pointer to a parent struct.
-	PhysicalDevice* p_parent;
-
-	// Gets the index of this queue family.
-	// Index is necessary when creating anything with a queue family.
-	uint32_t getIndex();
-
-private:
-	friend struct PhysicalDevice;
-	friend struct LogicalDevice;
-	friend struct CommandPool;
-
-	// Queues belonging to this family.
-	vec<Queue> queues{};
-
-	// Properties of this queue family
-	VkQueueFamilyProperties props;
-	// Index of this queue family. 
-	uint32_t index;
-
-
-	QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties props, uint32_t index);
-
-}; // struct QueueFamily
 
 /**
 * Logical device represents a logical connection to a physical device.
@@ -165,7 +173,7 @@ public:
 	* @param VkAllocationCallbacks allocator - Allocator.
 	*
 	*/
-	LogicalDevice(PhysicalDevice* p_parent, VkDeviceCreateInfo* p_info, VkAllocationCallbacks* p_allocator);
+	LogicalDevice(PhysicalDevice* p_parent, VkDeviceCreateInfo info, VkAllocationCallbacks allocator);
 
 private:
 	friend struct CommandPool;
@@ -173,7 +181,7 @@ private:
 	vec<CommandPool> command_pools{};
 
 	// Vulkan handle of this wrap.
-	VkDevice vk_handle;
+	VkDevice* p_vk_handle;
 	// Pointer to a parent struct.
 	PhysicalDevice* p_parent;
 
@@ -183,7 +191,7 @@ private:
 * This struct represents a group of physical devices of the same vendor
 * which can be represented as a single logical device to combine their memory.
 * 
-* TODO - make adecuate enumeration method, i.e. make it enumerate devices as well.
+* TODO - make adequate enumeration method, i.e. make it enumerate devices as well.
 */
 struct PhysicalDeviceGroup
 {
@@ -194,7 +202,7 @@ private:
 	// List of a pointers to each physical device of the group.
 	vec<PhysicalDevice*> p_physical_devices;
 	// Properties of this device group.
-	VkPhysicalDeviceGroupProperties props;
+	VkPhysicalDeviceGroupProperties* p_props;
 	
 	PhysicalDeviceGroup(VkPhysicalDeviceGroupProperties props);
 };
@@ -202,10 +210,11 @@ private:
 /**
 * This static struct represents an application built with this library.
 * Creation of any objects with it, as well as inheritance of it
-* is considered as an undefined behaviour.
+* is considered as an undefined behavior.
 */
 struct Application
 {
+	friend class Window;
 	/**
 	* General technical parameters submitted to an
 	* application right in the moment of creation.
@@ -214,7 +223,7 @@ struct Application
 	{
 		
 	};
-	// Parameters of the application
+	// Parameters of the application.
 	static const Parameters param;
 
 	// Vulkan instance - basement of everything in Vulkan.
@@ -225,7 +234,7 @@ struct Application
 	static inline vec<PhysicalDeviceGroup> phys_device_groups{};
 
 	// Windows of this application.
-	static inline vec<sptr<Window>> app_windows{};
+	static inline vec<Window*> app_windows{};
 
 	// Returns quantity of app windows.
 	static size_t getWinQuantity();
@@ -233,6 +242,7 @@ struct Application
 	// Creates Vulkan instance and initializes essentials.
 	static void initVulkan(const char* app_name, uint32_t app_version[4]);
 
+	// Final cleanup that must be called every time an application ends its session.
 	static void finalCleanup();
 
 	Application() = delete;

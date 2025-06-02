@@ -8,7 +8,7 @@
 
 Heart::Heart(HeartProperties* props) :
 	fps_cap(props->fps_cap),
-	attached_windows(props->attached_windows)
+	p_attached_windows(props->p_attached_windows)
 {
 
 }
@@ -176,7 +176,7 @@ void Heart::input()
 }
 void Heart::render()
 {
-	printf("HELLO");
+	
 }
 
 

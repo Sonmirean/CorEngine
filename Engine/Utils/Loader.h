@@ -12,4 +12,4 @@
 * @param const char* file_path - Path of .obj file to load.
 * @returns A Model object.
 */
-Model loadModel(const char* file_path);
+Model loadModelOBJ(const char* file_path);

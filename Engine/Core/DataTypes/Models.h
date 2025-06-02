@@ -11,12 +11,16 @@ struct Vertex
 	float tex[2];
 };
 
+struct Face
+{
+	uint32_t indices[3][3];
+};
+
 
 struct Model
 {
 	vec<Vertex> vertices;
-
-	vec <int[3][3]> faces;
+	vec<Face> faces;
 
 };
 

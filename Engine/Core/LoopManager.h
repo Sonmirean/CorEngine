@@ -12,7 +12,7 @@
 struct HeartProperties
 {
 	unsigned int fps_cap = 60;
-	vec<sptr<Window>> attached_windows{};
+	vec<Window*> p_attached_windows;
 };
 
 // This class represents an asynchronous rendering cycle.
@@ -28,6 +28,9 @@ public:
 
 	virtual void init();
 
+	// Starts the rendering cycle.
+	// Note that starting it putting thread in which it was runned in a 100-millisecond sleep.
+	// This is done to prevent some inheritance bug, which is caused by vtables (I don't remember details, sorry).
 	void start();
 	void stop();
 
@@ -56,7 +59,7 @@ private:
 	unsigned int fps = 0;
 	float delta = 0;
 
-	std::vector<std::shared_ptr<Window>> attached_windows;
+	std::vector<Window*> p_attached_windows;
 
 	unsigned const long NANOSECOND = 1000000000L;
 	const long FRAMERATE = 1000L;
