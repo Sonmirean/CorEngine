@@ -1,9 +1,6 @@
 
-#define GLFW_INCLUDE_VULKAN
-
 #include <iostream>
 #include <thread>
-#include <GLFW/glfw3.h>
 #include "AppStructure.h"
 #include "WindowManager.h"
 #include "CorEngine.h"
@@ -52,6 +49,16 @@ VkPhysicalDeviceFeatures PhysicalDevice::getFeatures()
 	return features;
 } // VkPhysicalDeviceFeatures PhysicalDevice::getFeatures()
 
+std::vector<LogicalDevice> PhysicalDevice::getLogicalDevices()
+{
+	return logical_devices;
+}
+
+std::vector<QueueFamily> PhysicalDevice::getQueueFamilies()
+{
+	return queue_families;
+}
+
 void PhysicalDevice::enumerateAll()
 {
 	uint32_t phys_devices_found;
@@ -84,6 +91,16 @@ uint32_t QueueFamily::getIndex()
 	return index; 
 } // QueueFamily::getIndex() 
 
+std::vector<Queue> QueueFamily::getQueues()
+{
+	return queues;
+}
+
+VkQueueFamilyProperties QueueFamily::getProps()
+{
+	return props;
+}
+
 Queue::Queue(QueueFamily* p_parent)
 	: p_parent(p_parent) 
 {
@@ -101,14 +118,14 @@ LogicalDevice::LogicalDevice(PhysicalDevice* p_parent, VkDeviceCreateInfo info, 
 	{
 		Queue queue(&p_parent->queue_families[info.pQueueCreateInfos[i].queueFamilyIndex]);
 	}
-	for (size_t j = 0; j < p_parent->queue_families.size(); j++)
+	for (size_t i = 0; i < p_parent->queue_families.size(); i++)
 	{
-		for (size_t l = 0; l < p_parent->queue_families[j].queues.size(); l++)
+		for (size_t j = 0; j < p_parent->queue_families[i].queues.size(); j++)
 		{
-			p_parent->queue_families[j].queues[l].index = l;
+			p_parent->queue_families[i].queues[j].index = j;
 			VkQueue raw_queue;
-			vkGetDeviceQueue(vk_handle, p_parent->queue_families[j].index, l, &raw_queue);
-			p_parent->queue_families[j].queues[l].vk_handle = raw_queue;
+			vkGetDeviceQueue(vk_handle, p_parent->queue_families[i].index, j, &raw_queue);
+			p_parent->queue_families[i].queues[j].vk_handle = raw_queue;
 		}
 	}
 
@@ -125,7 +142,7 @@ void CommandPool::reset(VkCommandPoolResetFlags flags)
 	ensureVkSuccess(vkResetCommandPool(p_parent->vk_handle, vk_handle, flags));
 } // void CommandPool::reset()
 
-void CommandPool::allocBuffers(std::vector<const VkCommandBufferAllocateInfo> info)
+void CommandPool::allocBuffers(std::vector<VkCommandBufferAllocateInfo> info)
 {
 	vec<VkCommandBuffer> raw_buffers(info.size());
 	ensureVkSuccess(vkAllocateCommandBuffers(p_parent->vk_handle, info.data(), raw_buffers.data()));
@@ -141,9 +158,24 @@ CommandPool::~CommandPool()
 	vkDestroyCommandPool(p_parent->vk_handle, vk_handle, nullptr);
 } // CommandPool::~CommandPool()
 
+QueueFamily CommandPool::getQueueFamily()
+{
+	return *p_queue_family;
+}
+
+std::thread::id CommandPool::getThreadID()
+{
+	return thread_id;
+}
+
+std::vector<CommandBuffer> CommandPool::getCommandBuffers()
+{
+	return command_buffers;
+}
+
 CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family,
 	VkCommandPoolCreateFlagBits* p_flags_bitmask, VkAllocationCallbacks* p_allocator)
-	: p_parent(p_parent), queue_family_index(p_queue_family->index)
+	: p_parent(p_parent), p_queue_family(p_queue_family)
 {
 	VkCommandPool pool;
 	VkCommandPoolCreateInfo pool_info{};
@@ -165,8 +197,10 @@ namespace
 
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &app_info;
-		uint32_t glfwExtensionCount = 0;
+		uint32_t glfwExtensionCount;
 		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+		CORENGINE_DEBUG_PRINT(glfwExtensions[0])
+		CORENGINE_DEBUG_PRINT(glfwExtensions[1])
 		createInfo.enabledExtensionCount = glfwExtensionCount;
 		createInfo.ppEnabledExtensionNames = glfwExtensions;
 

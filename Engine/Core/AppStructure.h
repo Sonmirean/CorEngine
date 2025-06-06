@@ -1,9 +1,9 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
 
 #include <thread>
-#include <GLFW/glfw3.h>
+#include <DefinePlatform.h>
+#include <vulkan/vulkan.h>
 #include "LoopManager.h"
 #include "Types.h"
 #include "Debug.h"
@@ -25,6 +25,12 @@ public:
 	// Gets the index of this queue family.
 	// Index is necessary when creating anything with a queue family.
 	uint32_t getIndex();
+
+	// Gets vector of queues of this family.
+	std::vector<Queue> getQueues();
+
+	// Gets properties of this queue family.
+	VkQueueFamilyProperties getProps();
 
 private:
 	friend struct PhysicalDevice;
@@ -54,12 +60,19 @@ private:
 struct PhysicalDevice
 {
 public:
-	// Gets Vulkan features of that device.
-	VkPhysicalDeviceFeatures getFeatures();
 
 	// Enumerates all attached graphical processing units, or other
 	// devices that are recognized as suitable for rendering by Vulkan.
 	static void enumerateAll();
+
+	// Gets features of that device.
+	VkPhysicalDeviceFeatures getFeatures();
+
+	// Gets logical devices created by this physical device.
+	std::vector<LogicalDevice> getLogicalDevices();
+
+	// Gets queue families of this device.
+	std::vector<QueueFamily> getQueueFamilies();
 
 private:
 	friend struct LogicalDevice;
@@ -111,18 +124,7 @@ public:
 	* @param std::vector<const VkCommandBufferAllocateInfo> info - Specifies info for each command buffer to be allocated 
 	(as well as quantity of buffers).
 	*/
-	void allocBuffers(std::vector<const VkCommandBufferAllocateInfo> info);
-
-private:
-	// Pointer to a parent struct.
-	LogicalDevice* p_parent;
-	// Vulkan handle of this wrap.
-	VkCommandPool vk_handle;
-	// Queue family index.
-	uint32_t queue_family_index;
-
-	// Flags specifying behavior of the pool and its buffers.
-	VkCommandPoolCreateFlags flags;
+	void allocBuffers(std::vector<VkCommandBufferAllocateInfo> info);
 
 	/**
 	* Command pool is a pool of memory allocated for command buffers.
@@ -135,6 +137,26 @@ private:
 		VkAllocationCallbacks* p_allocator);
 
 	~CommandPool();
+
+	// Gets queue family of this pool.
+	QueueFamily getQueueFamily();
+
+	// Gets ID of the owner thread.
+	std::thread::id getThreadID();
+
+	// Gets a list of command buffers allocated from this pool.
+	std::vector<CommandBuffer> getCommandBuffers();
+
+private:
+	// Pointer to a parent struct.
+	LogicalDevice* p_parent;
+	// Vulkan handle of this wrap.
+	VkCommandPool vk_handle;
+	// Pointer to a queue family.
+	QueueFamily* p_queue_family;
+
+	// Flags specifying behavior of the pool and its buffers.
+	VkCommandPoolCreateFlags flags;
 
 	// Pointer to a thread which owns this command pool.
 	std::thread::id thread_id;
@@ -166,6 +188,14 @@ struct Queue
 {
 public:
 
+	// Gets family of this queue.
+	QueueFamily getQueueFamily();
+
+	// Gets index of this queue in a family.
+	uint32_t getIndex();
+
+
+
 private:
 	friend struct LogicalDevice;
 	// Pointer to a parent struct.
@@ -173,8 +203,7 @@ private:
 	// Vulkan handle of this wrap.
 	VkQueue vk_handle;
 
-	// Index of a queue in a family.
-
+	// Index of this queue in a family.
 	uint32_t index;
 
 	// Global priority of a queue.
@@ -202,6 +231,8 @@ public:
 	*
 	*/
 	LogicalDevice(PhysicalDevice* p_parent, VkDeviceCreateInfo info, VkAllocationCallbacks allocator);
+
+
 
 private:
 	friend struct CommandPool;

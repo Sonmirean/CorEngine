@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <thread>
+#include <cstring>
 
 #include <chrono>
 #include <GLFW/glfw3.h>
@@ -23,7 +24,7 @@ public:
 
 	void render() override
 	{
-		std::cout << std::this_thread::get_id() << std::endl;
+		
 	}
 };
 
@@ -31,6 +32,11 @@ public:
 int main()
 {
 	glfwInit();
+	
+	char appname[7] = "damnit";
+	uint32_t appver[4] = { 1,2,3,4 };
+
+	Application::initVulkan(appname, appver);
 
 	char title[] = "Stained glass window";
 	WindowProperties win_props
@@ -41,7 +47,7 @@ int main()
 	glfwDefaultWindowHints();
 	Window stained_glass_window = Window(&win_props);
 
-	HeartProperties heart_props{};
+	HeartProperties heart_props;
 	heart_props.p_attached_windows.push_back(&stained_glass_window);
 	SpecialHeart demonheart = SpecialHeart(&heart_props);
 

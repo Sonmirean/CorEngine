@@ -141,7 +141,9 @@ private:
 
 	friend struct Application;
 
-	unsigned int id;
+	uint32_t id;
+
+	VkSurfaceKHR vk_surface;
 
 	GLFWwindow*  handle;
 	GLFWwindow*	 share;

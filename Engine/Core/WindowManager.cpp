@@ -1,16 +1,43 @@
 
-#define GLFW_INCLUDE_VULKAN
-
 #include <iostream>
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+#include "AppStructure.h"
+
+#define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <thread>
 #include "DimensionUtils.h"
 #include "WindowManager.h"
-#include "AppStructure.h"
 
 
+static void initVkSurface(GLFWwindow* p_window, VkSurfaceKHR* p_surface)
+{
+	constexpr uint32_t code = CORENGINE_PLATFORM_CODE;
+	if (code == 1)
+	{
+		HWND hwnd = glfwGetWin32Window(p_window);
+		HINSTANCE hInstance = GetModuleHandle(NULL);
+		VkWin32SurfaceCreateInfoKHR info
+		{
+			.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+			.flags = 0,
+			.hinstance = hInstance,
+			.hwnd = hwnd,
+		};
+		ensureVkSuccess(vkCreateWin32SurfaceKHR(Application::instance, &info, nullptr, p_surface));
+	}
+	else
+	{
+		throw std::exception("Your OS is not supported yet.");
+	}
+}
 
 
 Window::Window(WindowProperties* props) :
@@ -26,6 +53,12 @@ Window::Window(WindowProperties* props) :
 		z_near(props->z_near),
 		z_far(props->z_far)
 {
+	if (Application::instance == nullptr)
+	{
+		throw std::runtime_error("Cannot create window before initializing Vulkan.");
+		delete this;
+		return;
+	}
 
 	handle = glfwCreateWindow(width, height, title, /*props->monitor ? props->monitor :*/ nullptr, /*props->share ? props->share :*/ nullptr);
 	if (!handle)
@@ -35,20 +68,20 @@ Window::Window(WindowProperties* props) :
 		return;
 	}
 
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+	initVkSurface(handle, &vk_surface);
+
 	GLFWwindow* prev = glfwGetCurrentContext();
 	glfwMakeContextCurrent(handle);
 
 	if (v_sync) {
 		glfwSwapInterval(1);
 	}
-
 	glfwMakeContextCurrent(prev);
-
 	refreshProjMat();
 	setPos(x_pos, y_pos);
-
 	Application::app_windows.push_back(this);
-
 	glfwShowWindow(handle);
 
 }
@@ -57,13 +90,6 @@ Window::~Window()
 {
 	glfwDestroyWindow(handle);
 }
-
-/*
-bool Window::operator ==(Window win)
-{
-
-}
-*/
 
 void Window::refreshProjMat()
 {
@@ -237,4 +263,3 @@ void Window::setFieldOfView(float fov)
 	this->fov = fov;
 	refreshProjMat();
 }
-
