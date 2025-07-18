@@ -3,8 +3,8 @@
 #include <chrono>
 #include <future>
 
-#include "WindowManager.h"
-#include "LoopManager.h"
+#include "window_manager.hpp"
+#include "loop_manager.hpp"
 
 
 Heart::Heart(HeartProperties* props) :

@@ -1,7 +1,7 @@
 #pragma once
 
 #define GLFW_INCLUDE_VULKAN
-#include "DataTypes/Models.h"
+#include "data_types.hpp"
 
 /**
 * Loads 3-dimensional model vertex data from .obj file.
@@ -10,4 +10,4 @@
 * @param const char* file_path - Path of .obj file to load.
 * @returns A Model object.
 */
-Model loadModelOBJ(const char* file_path);
+Dim3::Model_3D loadModelOBJ(const char* file_path);

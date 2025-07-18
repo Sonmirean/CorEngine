@@ -2,11 +2,10 @@
 
 #include <thread>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include "Debug.h"
-#include "Types.h"
+#include "debug.hpp"
+#include "short_type.hpp"
+#include "data_types.hpp"
+#include "matrix.hpp"
 
 /**
 * Declares a set of properties to be used while creating a Window object.
@@ -33,7 +32,7 @@ struct WindowProperties
 	//GLFWmonitor*		   monitor = nullptr;
 	//GLFWwindow*			   share = nullptr;
 	float				   fov = 1.0471975511965976f;
-	glm::mat4x4			   proj_mat{};
+	Mat4x4				   proj_mat;
 	unsigned int		   x_pos = 500;
 	unsigned int		   y_pos = 500;
 	float				   z_near = 0.01f;
@@ -107,7 +106,7 @@ public:
 	// Gets the Field of View parameter of this window.
 	float getFieldOfView() const;
 	// Gets projection matrix of this window.
-	glm::mat4x4 getProjMat() const;
+	Mat4x4 getProjMat() const;
 
 	/////////////////////////
 	///      SETTERS      ///
@@ -144,15 +143,13 @@ private:
 
 	VkSurfaceKHR vk_surface;
 
-	//GLFWwindow*  handle;
-	//GLFWwindow*	 share;
 	const char*  title;
 	unsigned int width;
 	unsigned int height;
 	unsigned int x_pos;
 	unsigned int y_pos;
 	bool		 v_sync;
-	glm::mat4x4  proj_mat;
+	Mat4x4		 proj_mat;
 	float		 fov;
 	float		 z_near;
 	float		 z_far;

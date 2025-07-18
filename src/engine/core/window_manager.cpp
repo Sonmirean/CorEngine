@@ -1,12 +1,10 @@
 
 #include <iostream>
-
-#include "AppStructure.h"
-#include "WindowManager.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <thread>
+
+#include "core_manager.hpp"
+#include "window_manager.hpp"
+#include "matrix.hpp"
 
 void createSurfaceDTD(const VkDisplaySurfaceCreateInfoKHR* p_info, VkSurfaceKHR* p_surface)
 {
@@ -80,9 +78,11 @@ Window::~Window()
 	//glfwDestroyWindow(handle);
 }
 
+// THIS METHOD IS NOT WORKING, Mat4x4::projection() HAS EMPTY DEFINITION!!!
+// TODO
 void Window::refreshProjMat()
 {
-	proj_mat = glm::perspective(fov, static_cast<float>(width / height), z_near, z_far);
+	proj_mat = Mat4x4::projection(fov, static_cast<float>(width / height), z_near, z_far);
 }
 
 void Window::centralize()
@@ -189,7 +189,7 @@ float Window::getFieldOfView() const
 	return fov;
 }
 
-glm::mat4x4 Window::getProjMat() const
+Mat4x4 Window::getProjMat() const
 {
 	return proj_mat;
 }

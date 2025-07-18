@@ -2,7 +2,7 @@
 
 #include <chrono>
 #include <future>
-#include "WindowManager.h"
+#include "window_manager.hpp"
 
 /**
 * Declares a set of properties to be used while creating a Heart object.

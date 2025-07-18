@@ -20,11 +20,13 @@ file(GLOB_RECURSE SRC "src/*.cpp")
 add_library(CorEngine STATIC ${SRC})
 
 target_include_directories(CorEngine PUBLIC 
+""
 "include"
 "include/auxiliary"
 "include/engine"
 "include/engine/audio"
 "include/engine/core"
+"include/engine/core/math"
 "include/engine/graphics"
 "include/engine/input"
 "include/engine/physics"

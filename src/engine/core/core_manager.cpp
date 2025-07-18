@@ -1,13 +1,13 @@
 
 #include <iostream>
 
-#include "CorEngine.h"
+#include "CorEngine.hpp"
 
-#include "AppStructure.h"
-#include "WindowManager.h"
+#include "core_manager.hpp"
+#include "window_manager.hpp"
 
-#include "Types.h"
-#include "Debug.h"
+#include "short_type.hpp"
+#include "debug.hpp"
 
 QueueFamily::QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties* p_props, uint32_t index)
 	: p_parent(p_parent), props(*p_props), index(index)
@@ -147,11 +147,8 @@ void CommandPool::reset(VkCommandPoolResetFlags flags)
 void CommandPool::allocBuffers(std::vector<VkCommandBufferLevel> levels, std::vector<uint32_t> quantities)
 {
 	vec<VkCommandBufferAllocateInfo> infos(levels.size());
-	bool single_per_level = false;
-	if (quantities.size() == 0)
-	{
-		single_per_level = true;
-	}
+	bool single_per_level;
+	quantities.empty() ? single_per_level = true : single_per_level = false;
 	for (size_t i = 0; i < levels.size(); i++)
 	{
 		VkCommandBufferAllocateInfo info{};
@@ -167,9 +164,19 @@ void CommandPool::allocBuffers(std::vector<VkCommandBufferLevel> levels, std::ve
 
 	for (size_t i = 0; i < raw_buffers.size(); i++)
 	{
-		command_buffers[i].vk_handle = raw_buffers[i];
+		CommandBuffer buffer(raw_buffers[i], this, command_buffers.size() + 1);
+
+		command_buffers.push_back(buffer);
 	}
 } // void CommandPool::allocBuffers()
+
+void CommandPool::freeBuffers(std::vector<uint32_t> buffer_indices)
+{
+	for (size_t i = 0; i < buffer_indices.size(); i++)
+	{
+		command_buffers.erase(command_buffers.begin() + buffer_indices[i]);
+	}
+} // void CommandPool::freeBuffers()
 
 CommandPool::~CommandPool()
 {
@@ -206,6 +213,12 @@ CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family,
 	thread_id = std::this_thread::get_id();
 	p_parent->command_pools.push_back(std::move(*this));
 } // CommandPool::CommandPool()
+
+CommandBuffer::CommandBuffer(VkCommandBuffer vk_handle, CommandPool* p_parent, uint32_t index)
+	: vk_handle(vk_handle), p_parent(p_parent), index(index)
+{
+
+} // CommandBuffer::CommandBuffer()
 
 namespace
 {

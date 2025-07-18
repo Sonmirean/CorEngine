@@ -2,9 +2,9 @@
 
 #include <thread>
 
-#include "LoopManager.h"
-#include "Types.h"
-#include "Debug.h"
+#include "loop_manager.hpp"
+#include "short_type.hpp"
+#include "debug.hpp"
 
 
 struct CommandBuffer;
@@ -152,6 +152,13 @@ public:
 	void allocBuffers(std::vector<VkCommandBufferLevel> levels, std::vector<uint32_t> quantities);
 
 	/**
+	* Frees one or more command buffers.
+	* 
+	* @param std::vector<uint32_t> buffer_indices - Indices of buffers to free.
+	*/
+	void freeBuffers(std::vector<uint32_t> buffer_indices);
+
+	/**
 	* Command pool is a pool of memory allocated for command buffers.
 	* A single command pool must NOT be used concurrently in multiple threads.
 	* Must be created from a thread that is desired to be its owner.
@@ -203,6 +210,11 @@ public:
 	// TODO - something
 private:
 	friend struct CommandPool;
+
+	CommandBuffer(VkCommandBuffer vk_handle, CommandPool* p_parent, uint32_t index);
+
+	// Index of a buffer in pool.
+	uint32_t index;
 	// Pointer to a parent struct.
 	CommandPool* p_parent;
 	// Vulkan handle of this wrap.
@@ -315,14 +327,14 @@ struct Application
 	static const Parameters param;
 
 	// Vulkan instance - basement of everything in Vulkan.
-	static inline VkInstance instance{};
+	static VkInstance instance;
 	// Physical devices found by current Vulkan instance.
-	static inline vec<PhysicalDevice> phys_devices{};
+	static vec<PhysicalDevice> phys_devices;
 	// List of physical device groups.
-	static inline vec<PhysicalDeviceGroup> phys_device_groups{};
+	static vec<PhysicalDeviceGroup> phys_device_groups;
 
 	// Windows of this application.
-	static inline vec<Window*> app_windows{};
+	static vec<Window*> app_windows;
 	
 
 	// Returns quantity of app windows.
