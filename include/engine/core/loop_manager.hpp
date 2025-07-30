@@ -4,65 +4,70 @@
 #include <future>
 #include "window_manager.hpp"
 
-/**
-* Declares a set of properties to be used while creating a Heart object.
-*
-* 
-*/
-struct HeartProperties
+namespace CorE
 {
-	unsigned int fps_cap = 60;
-	vec<Window*> p_attached_windows;
-};
 
-// This class represents an asynchronous rendering cycle.
-// It must have at least one window attached.
-// 
-class Heart
-{
-public:
+	/**
+	* Declares a set of properties to be used while creating a Heart object.
+	*
+	*
+	*/
+	struct HeartProperties
+	{
+		unsigned int fps_cap = 60;
+		vec<Window*> p_attached_windows;
+	};
 
-	Heart(HeartProperties* props);
+	// This class represents an asynchronous rendering cycle.
+	// It must have at least one window attached.
+	// 
+	class Heart
+	{
+	public:
 
-	~Heart();
+		Heart(HeartProperties* props);
 
-	virtual void init();
+		~Heart();
 
-	// Starts the rendering cycle.
-	// Note that starting it putting thread in which it was runned in a 100-millisecond sleep.
-	// This is done to prevent some inheritance bug, which is caused by vtables (I don't remember details, sorry).
-	void start();
-	void stop();
+		virtual void init();
 
-	virtual void update();
-	virtual void input();
-	virtual void render();
+		// Starts the rendering cycle.
+		// Note that starting it putting thread in which it was runned in a 100-millisecond sleep.
+		// This is done to prevent some inheritance bug, which is caused by vtables (I don't remember details, sorry).
+		void start();
+		void stop();
+
+		virtual void update();
+		virtual void input();
+		virtual void render();
 
 
-	float getDelta();
-	unsigned int getFps();
+		float getDelta();
+		unsigned int getFps();
 
-	void setFpsCap(unsigned int cap);
-	unsigned int getFpsCap();
+		void setFpsCap(unsigned int cap);
+		unsigned int getFpsCap();
 
-	bool isRunning() const;
+		bool isRunning() const;
 
-private:
+	private:
 
-	void run();
+		void run();
 
-	std::future<void> async_call;
+		std::future<void> async_call;
 
-	bool is_running = false;
-	unsigned int fps_cap = 60;
+		bool is_running = false;
+		unsigned int fps_cap = 60;
 
-	unsigned int fps = 0;
-	float delta = 0;
+		unsigned int fps = 0;
+		float delta = 0;
 
-	std::vector<Window*> p_attached_windows;
+		std::vector<Window*> p_attached_windows;
 
-	unsigned const long NANOSECOND = 1000000000L;
-	const long FRAMERATE = 1000L;
-	const float FRAMETIME = 1.0f / FRAMERATE;
+		unsigned const long NANOSECOND = 1000000000L;
+		const long FRAMERATE = 1000L;
+		const float FRAMETIME = 1.0f / FRAMERATE;
 
-};
+	};
+
+}

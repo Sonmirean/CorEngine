@@ -7,24 +7,24 @@
 #include "loop_manager.hpp"
 
 
-Heart::Heart(HeartProperties* props) :
+CorE::Heart::Heart(HeartProperties* props) :
 	fps_cap(props->fps_cap),
 	p_attached_windows(props->p_attached_windows)
 {
 
 }
 
-Heart::~Heart()
+CorE::Heart::~Heart()
 {
 
 }
 
-void Heart::init()
+void CorE::Heart::init()
 {
 
 }
 
-void Heart::start()
+void CorE::Heart::start()
 {
 	if (!is_running)
 	{
@@ -36,7 +36,7 @@ void Heart::start()
 
 }
 
-void Heart::stop()
+void CorE::Heart::stop()
 {
 	if (is_running)
 	{
@@ -44,7 +44,7 @@ void Heart::stop()
 	}
 }
 
-void Heart::run()
+void CorE::Heart::run()
 {
 
 	is_running = true;
@@ -167,39 +167,39 @@ void Heart::run()
 	/// ------------------------------- /// LOOP /// ------------------------------- ///
 }
 
-void Heart::update()
+void CorE::Heart::update()
 {
 
 }
-void Heart::input()
+void CorE::Heart::input()
 {
 
 }
-void Heart::render()
+void CorE::Heart::render()
 {
 	
 }
 
 
-float Heart::getDelta()
+float CorE::Heart::getDelta()
 {
 	return delta;
 }
-unsigned int Heart::getFps()
+unsigned int CorE::Heart::getFps()
 {
 	return fps;
 }
 
-void Heart::setFpsCap(unsigned int cap)
+void CorE::Heart::setFpsCap(unsigned int cap)
 {
 	fps_cap = cap;
 }
-unsigned int Heart::getFpsCap()
+unsigned int CorE::Heart::getFpsCap()
 {
 	return fps_cap;
 }
 
-bool Heart::isRunning() const
+bool CorE::Heart::isRunning() const
 {
 	return is_running;
 }

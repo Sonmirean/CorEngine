@@ -1,7 +1,7 @@
 
 #include "matrix.hpp"
 
-Mat4x4::Mat4x4()
+CorE::math::Mat4x4::Mat4x4()
 {
 	for (uint8_t i = 0; i < 4; i++)
 	{
@@ -12,14 +12,14 @@ Mat4x4::Mat4x4()
 	}
 }
 
-float* Mat4x4::operator[](int column)
+float* CorE::math::Mat4x4::operator[](int column)
 {
 	//return val[column];
 	return 0;//
 }
 
 
-Mat4x4& Mat4x4::projection(float fov, float aspect_ratio, float z_near, float z_far)
+CorE::math::Mat4x4& CorE::math::Mat4x4::projection(float fov, float aspect_ratio, float z_near, float z_far)
 {
 	Mat4x4 result;
 
@@ -28,7 +28,7 @@ Mat4x4& Mat4x4::projection(float fov, float aspect_ratio, float z_near, float z_
 	return result;
 }
 
-Mat4x4& Mat4x4::transformation(Vec3 scale, Vec3 rotate, Vec3 displace)
+CorE::math::Mat4x4& CorE::math::Mat4x4::transformation(Vec3 scale, Vec3 rotate, Vec3 displace)
 {
 	Mat4x4 result;
 
@@ -40,7 +40,7 @@ Mat4x4& Mat4x4::transformation(Vec3 scale, Vec3 rotate, Vec3 displace)
 	return result;
 }
 
-Mat4x4& Mat4x4::identity()
+CorE::math::Mat4x4& CorE::math::Mat4x4::identity()
 {
 	Mat4x4 result;
 
@@ -52,7 +52,7 @@ Mat4x4& Mat4x4::identity()
 	return result;
 }
 
-Mat4x4& Mat4x4::multiplyNaive(Mat4x4& rhs) const
+CorE::math::Mat4x4& CorE::math::Mat4x4::multiplyNaive(Mat4x4& rhs) const
 {
 	Mat4x4 result;
 
@@ -66,7 +66,7 @@ Mat4x4& Mat4x4::multiplyNaive(Mat4x4& rhs) const
 	return result;
 }
 
-Mat4x4& Mat4x4::divideNaive(Mat4x4& rhs) const
+CorE::math::Mat4x4& CorE::math::Mat4x4::divideNaive(Mat4x4& rhs) const
 {
 	Mat4x4 result;
 
@@ -80,7 +80,7 @@ Mat4x4& Mat4x4::divideNaive(Mat4x4& rhs) const
 	return result;
 }
 
-Mat4x4& Mat4x4::T()
+CorE::math::Mat4x4& CorE::math::Mat4x4::T()
 {
 	Mat4x4 result;
 
@@ -95,7 +95,7 @@ Mat4x4& Mat4x4::T()
 }
 
 
-Mat4x4 &Mat4x4::operator*(Mat4x4& rhs)
+CorE::math::Mat4x4 &CorE::math::Mat4x4::operator*(Mat4x4& rhs)
 {
 	Mat4x4 result;
 
@@ -113,7 +113,7 @@ Mat4x4 &Mat4x4::operator*(Mat4x4& rhs)
 }
 
 
-Mat4x4& Mat4x4::operator+(Mat4x4& rhs)
+CorE::math::Mat4x4& CorE::math::Mat4x4::operator+(Mat4x4& rhs)
 {
 	Mat4x4 result;
 
@@ -127,7 +127,7 @@ Mat4x4& Mat4x4::operator+(Mat4x4& rhs)
 	return result;
 }
 
-Mat4x4& Mat4x4::operator-(Mat4x4& rhs)
+CorE::math::Mat4x4& CorE::math::Mat4x4::operator-(Mat4x4& rhs)
 {
 	Mat4x4 result;
 
@@ -141,7 +141,7 @@ Mat4x4& Mat4x4::operator-(Mat4x4& rhs)
 	return result;
 }
 
-Mat4x4& Mat4x4::operator*(float& rhs)
+CorE::math::Mat4x4& CorE::math::Mat4x4::operator*(float& rhs)
 {
 	Mat4x4 result;
 
@@ -156,7 +156,7 @@ Mat4x4& Mat4x4::operator*(float& rhs)
 }
 
 
-Mat4x4& Mat4x4::operator+(float& rhs)
+CorE::math::Mat4x4& CorE::math::Mat4x4::operator+(float& rhs)
 {
 	Mat4x4 result;
 
@@ -170,7 +170,7 @@ Mat4x4& Mat4x4::operator+(float& rhs)
 	return result;
 }
 
-Mat4x4& Mat4x4::operator-(float& rhs)
+CorE::math::Mat4x4& CorE::math::Mat4x4::operator-(float& rhs)
 {
 	Mat4x4 result;
 
@@ -185,7 +185,7 @@ Mat4x4& Mat4x4::operator-(float& rhs)
 }
 
 
-Vec4& Mat4x4::operator*(Vec4& rhs)
+CorE::math::Vec4& CorE::math::Mat4x4::operator*(Vec4& rhs)
 {
 	Vec4 result;
 

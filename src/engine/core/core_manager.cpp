@@ -9,13 +9,13 @@
 #include "short_type.hpp"
 #include "debug.hpp"
 
-QueueFamily::QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties* p_props, uint32_t index)
+CorE::QueueFamily::QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties* p_props, uint32_t index)
 	: p_parent(p_parent), props(*p_props), index(index)
 {
 
 } // QueueFamily::QueueFamily()
 
-void PhysicalDevice::enumerateQueueFamilies()
+void CorE::PhysicalDevice::enumerateQueueFamilies()
 {
 	uint32_t queue_family_props_count;
 	vkGetPhysicalDeviceQueueFamilyProperties(vk_handle, &queue_family_props_count, nullptr);
@@ -29,7 +29,7 @@ void PhysicalDevice::enumerateQueueFamilies()
 	queue_families.shrink_to_fit();
 } // void PhysicalDevice::enumerateQueueFamilies()
 
-void PhysicalDevice::enumerateDeviceLayers()
+void CorE::PhysicalDevice::enumerateDeviceLayers()
 {
 	uint32_t layer_count;
 	ensureVkSuccess(vkEnumerateDeviceLayerProperties(vk_handle, &layer_count, nullptr));
@@ -43,24 +43,24 @@ void PhysicalDevice::enumerateDeviceLayers()
 	}
 } // PhysicalDevice::enumerateDeviceLayers()
 
-VkPhysicalDeviceFeatures PhysicalDevice::getFeatures()
+VkPhysicalDeviceFeatures CorE::PhysicalDevice::getFeatures()
 {
 	VkPhysicalDeviceFeatures features;
 	vkGetPhysicalDeviceFeatures(vk_handle, &features);
 	return features;
 } // VkPhysicalDeviceFeatures PhysicalDevice::getFeatures()
 
-std::vector<LogicalDevice> PhysicalDevice::getLogicalDevices()
+std::vector<CorE::LogicalDevice> CorE::PhysicalDevice::getLogicalDevices()
 {
 	return logical_devices;
 } // std::vector<LogicalDevice> PhysicalDevice::getLogicalDevices()
 
-std::vector<QueueFamily> PhysicalDevice::getQueueFamilies()
+std::vector<CorE::QueueFamily> CorE::PhysicalDevice::getQueueFamilies()
 {
 	return queue_families;
 } // std::vector<QueueFamily> PhysicalDevice::getQueueFamilies()
 
-void PhysicalDevice::enumerateAll()
+void CorE::PhysicalDevice::enumerateAll()
 {
 	uint32_t phys_devices_found;
 	ensureVkSuccess(vkEnumeratePhysicalDevices(Application::instance, &phys_devices_found, nullptr));
@@ -81,35 +81,35 @@ void PhysicalDevice::enumerateAll()
 	}
 } // void PhysicalDevice::enumerateAll()
 
-PhysicalDevice::PhysicalDevice(VkPhysicalDevice vk_handle) : vk_handle(vk_handle)
+CorE::PhysicalDevice::PhysicalDevice(VkPhysicalDevice vk_handle) : vk_handle(vk_handle)
 {
 	// Automatically enumerates all necessary things to work with that device.
 	enumerateDeviceLayers();
 	enumerateQueueFamilies();
 } // PhysicalDevice::PhysicalDevice()
 
-uint32_t QueueFamily::getIndex() 
+uint32_t CorE::QueueFamily::getIndex()
 { 
 	return index; 
 } // QueueFamily::getIndex() 
 
-std::vector<Queue> QueueFamily::getQueues()
+std::vector<CorE::Queue> CorE::QueueFamily::getQueues()
 {
 	return queues;
 } // std::vector<Queue> QueueFamily::getQueues()
 
-VkQueueFamilyProperties QueueFamily::getProps()
+VkQueueFamilyProperties CorE::QueueFamily::getProps()
 {
 	return props;
 } // VkQueueFamilyProperties QueueFamily::getProps()
 
-Queue::Queue(QueueFamily* p_parent)
+CorE::Queue::Queue(QueueFamily* p_parent)
 	: p_parent(p_parent) 
 {
 	p_parent->queues.push_back(std::move(*this));
 } // Queue::Queue()
 
-LogicalDevice::LogicalDevice(PhysicalDevice* p_parent, VkDeviceCreateInfo info, VkAllocationCallbacks allocator)
+CorE::LogicalDevice::LogicalDevice(PhysicalDevice* p_parent, VkDeviceCreateInfo info, VkAllocationCallbacks allocator)
 	: p_parent(p_parent)
 {
 	ensureVkSuccess(vkCreateDevice(p_parent->vk_handle, &info, &allocator, &vk_handle));
@@ -134,17 +134,17 @@ LogicalDevice::LogicalDevice(PhysicalDevice* p_parent, VkDeviceCreateInfo info, 
 	p_parent->logical_devices.push_back(std::move(*this));
 } // LogicalDevice::LogicalDevice()
 
-void CommandPool::trim()
+void CorE::CommandPool::trim()
 {
 	vkTrimCommandPool(p_parent->vk_handle, vk_handle, 0);
 } // void CommandPool::trim()
 
-void CommandPool::reset(VkCommandPoolResetFlags flags)
+void CorE::CommandPool::reset(VkCommandPoolResetFlags flags)
 {
 	ensureVkSuccess(vkResetCommandPool(p_parent->vk_handle, vk_handle, flags));
 } // void CommandPool::reset()
 
-void CommandPool::allocBuffers(std::vector<VkCommandBufferLevel> levels, std::vector<uint32_t> quantities)
+void CorE::CommandPool::allocBuffers(std::vector<VkCommandBufferLevel> levels, std::vector<uint32_t> quantities)
 {
 	vec<VkCommandBufferAllocateInfo> infos(levels.size());
 	bool single_per_level;
@@ -170,7 +170,7 @@ void CommandPool::allocBuffers(std::vector<VkCommandBufferLevel> levels, std::ve
 	}
 } // void CommandPool::allocBuffers()
 
-void CommandPool::freeBuffers(std::vector<uint32_t> buffer_indices)
+void CorE::CommandPool::freeBuffers(std::vector<uint32_t> buffer_indices)
 {
 	for (size_t i = 0; i < buffer_indices.size(); i++)
 	{
@@ -178,27 +178,27 @@ void CommandPool::freeBuffers(std::vector<uint32_t> buffer_indices)
 	}
 } // void CommandPool::freeBuffers()
 
-CommandPool::~CommandPool()
+CorE::CommandPool::~CommandPool()
 {
 	vkDestroyCommandPool(p_parent->vk_handle, vk_handle, nullptr);
 } // CommandPool::~CommandPool()
 
-QueueFamily CommandPool::getQueueFamily()
+CorE::QueueFamily CorE::CommandPool::getQueueFamily()
 {
 	return *p_queue_family;
 } // QueueFamily CommandPool::getQueueFamily()
 
-std::thread::id CommandPool::getThreadID()
+std::thread::id CorE::CommandPool::getThreadID()
 {
 	return thread_id;
 } // std::thread::id CommandPool::getThreadID()
 
-std::vector<CommandBuffer> CommandPool::getCommandBuffers()
+std::vector<CorE::CommandBuffer> CorE::CommandPool::getCommandBuffers()
 {
 	return command_buffers;
 } // std::vector<CommandBuffer> CommandPool::getCommandBuffers()
 
-CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family,
+CorE::CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family,
 	VkCommandPoolCreateFlagBits flags_bitmask, const VkAllocationCallbacks* p_allocator)
 	: p_parent(p_parent), p_queue_family(p_queue_family)
 {
@@ -214,7 +214,35 @@ CommandPool::CommandPool(LogicalDevice* p_parent, QueueFamily* p_queue_family,
 	p_parent->command_pools.push_back(std::move(*this));
 } // CommandPool::CommandPool()
 
-CommandBuffer::CommandBuffer(VkCommandBuffer vk_handle, CommandPool* p_parent, uint32_t index)
+void CorE::CommandBuffer::begin(VkCommandBufferUsageFlags flags, VkCommandBufferInheritanceInfo* p_inherit_info)
+{
+	const VkCommandBufferBeginInfo info
+	{
+		VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+		nullptr,
+		flags,
+		p_inherit_info
+	};
+
+	ensureVkSuccess(vkBeginCommandBuffer(vk_handle, &info));
+} // void CommandBuffer::begin()
+
+void CorE::CommandBuffer::end()
+{
+	ensureVkSuccess(vkEndCommandBuffer(vk_handle));
+} // void CommandBuffer::end()
+
+void CorE::CommandBuffer::chain(std::vector<CorE::CommandBuffer*> buffers)
+{
+	for (size_t i = 0; i < buffers.size(); i++)
+	{
+		vkCmdExecuteCommands(vk_handle, 1, &buffers[i]->vk_handle);
+		p_next = buffers[i];
+		buffers[i]->p_prev = this;
+	}
+} // void CommandBuffer::chain()
+
+CorE::CommandBuffer::CommandBuffer(VkCommandBuffer vk_handle, CommandPool* p_parent, uint32_t index)
 	: vk_handle(vk_handle), p_parent(p_parent), index(index)
 {
 
@@ -222,7 +250,7 @@ CommandBuffer::CommandBuffer(VkCommandBuffer vk_handle, CommandPool* p_parent, u
 
 namespace
 {
-	VkInstanceCreateInfo* createVkInfo(VkApplicationInfo app_info)
+	VkInstanceCreateInfo* createVkInstanceInfo(VkApplicationInfo app_info)
 	{
 		VkInstanceCreateInfo createInfo{};
 
@@ -252,10 +280,10 @@ namespace
 	}
 } // anonymous namespace
 
-PhysicalDeviceGroup::PhysicalDeviceGroup(VkPhysicalDeviceGroupProperties props)
+CorE::PhysicalDeviceGroup::PhysicalDeviceGroup(VkPhysicalDeviceGroupProperties props)
 	: p_props(&props) { } // PhysicalDeviceGroup::PhysicalDeviceGroup()
 
-void PhysicalDeviceGroup::enumerateAll()
+void CorE::PhysicalDeviceGroup::enumerateAll()
 {
 	uint32_t group_count;
 	ensureVkSuccess(vkEnumeratePhysicalDeviceGroups(Application::instance, &group_count, nullptr));
@@ -276,7 +304,7 @@ void PhysicalDeviceGroup::enumerateAll()
 	}
 } // void PhysicalDeviceGroup::enumerateAll()
 
-void PhysicalDevice::enumerateDisplays()
+void CorE::PhysicalDevice::enumerateDisplays()
 {
 	// only one display for now.
 	uint32_t count;
@@ -291,20 +319,20 @@ void PhysicalDevice::enumerateDisplays()
 	}
 } // PhysicalDevice::enumerateDisplays()
 
-size_t Application::getWinQuantity()
+size_t CorE::Application::getWinQuantity()
 {
 	return app_windows.size();
 } // size_t Application::getWinQuantity()
 
-void Application::initVulkan(const char* app_name, uint32_t app_version[4])
+void CorE::Application::initVulkan(const char* app_name, uint32_t app_version[4])
 {
-	ensureVkSuccess(vkCreateInstance(createVkInfo(createVkAppInfo(app_name, app_version)), nullptr, &Application::instance));
+	ensureVkSuccess(vkCreateInstance(createVkInstanceInfo(createVkAppInfo(app_name, app_version)), nullptr, &Application::instance));
 
 	PhysicalDeviceGroup::enumerateAll();
 	PhysicalDevice::enumerateAll();
 } // void Application::initVulkan()
 
-void Application::finalCleanup()
+void CorE::Application::finalCleanup()
 {
 	vkDestroyInstance(Application::instance, nullptr);
 
@@ -316,5 +344,10 @@ void Application::finalCleanup()
 	//glfwTerminate();
 } // void Application::finalCleanup()
 
-Display::Display(VkDisplayPropertiesKHR props, PhysicalDevice* p_phys_device)
+CorE::Display::Display(VkDisplayPropertiesKHR props, PhysicalDevice* p_phys_device)
 	: props(props), p_parent(p_phys_device) {} // Display::Display()
+
+VkSemaphoreType CorE::Queue::Semaphore::getType()
+{
+	return type;
+}

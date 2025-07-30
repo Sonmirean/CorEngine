@@ -29,7 +29,7 @@ static void initVkSurface(GLFWwindow* p_window, VkSurfaceKHR* p_surface)
 }
 */
 
-Window::Window(WindowProperties* props) :
+CorE::Window::Window(CorE::WindowProperties* props) :
 		title(props->title), 
 		width(props->width), 
 		height(props->height), 
@@ -72,7 +72,7 @@ Window::Window(WindowProperties* props) :
 	*/
 }
 
-Window::~Window()
+CorE::Window::~Window()
 {
 	vkDestroySurfaceKHR(Application::instance, vk_surface, nullptr);
 	//glfwDestroyWindow(handle);
@@ -80,26 +80,26 @@ Window::~Window()
 
 // THIS METHOD IS NOT WORKING, Mat4x4::projection() HAS EMPTY DEFINITION!!!
 // TODO
-void Window::refreshProjMat()
+void CorE::Window::refreshProjMat()
 {
-	proj_mat = Mat4x4::projection(fov, static_cast<float>(width / height), z_near, z_far);
+	proj_mat = CorE::math::Mat4x4::projection(fov, static_cast<float>(width / height), z_near, z_far);
 }
 
-void Window::centralize()
+void CorE::Window::centralize()
 {
 	//int xPos = (glfwGetVideoMode(glfwGetPrimaryMonitor())->width / 2) - (width / 2);
 	//int yPos = (glfwGetVideoMode(glfwGetPrimaryMonitor())->height / 2) - (height / 2);
 	//glfwSetWindowPos(handle, xPos, yPos);
 }
 
-void Window::update()
+void CorE::Window::update()
 {
 	refreshProjMat();
 	swapBuffers();
 	//pollEvents();
 }
 
-void Window::swapBuffers()
+void CorE::Window::swapBuffers()
 {
 	//if (!shouldClose())
 		//glfwSwapBuffers(handle);
@@ -132,22 +132,22 @@ void Window::setLimits(unsigned int min_w, unsigned int min_h, unsigned int max_
 }
 */
 
-const char* Window::getTitle() const
+const char* CorE::Window::getTitle() const
 {
 	return title;
 }
 
-unsigned int Window::getPos(char dim) const
+unsigned int CorE::Window::getPos(char dim) const
 {
 	return (dim == 'x') ? x_pos : y_pos;
 }
 
-unsigned int Window::getSize(char dim) const
+unsigned int CorE::Window::getSize(char dim) const
 {
 	return (dim == 'x') ? width : height;
 }
 
-bool Window::isVSync() const
+bool CorE::Window::isVSync() const
 {
 	return v_sync;
 }
@@ -174,39 +174,39 @@ GLFWmonitor* Window::getMonitor() const
 }
 */
 
-float Window::getNearClip() const
+float CorE::Window::getNearClip() const
 {
 	return z_near;
 }
 
-float Window::getFarClip() const
+float CorE::Window::getFarClip() const
 {
 	return z_far;
 }
 
-float Window::getFieldOfView() const
+float CorE::Window::getFieldOfView() const
 {
 	return fov;
 }
 
-Mat4x4 Window::getProjMat() const
+CorE::math::Mat4x4 CorE::Window::getProjMat() const
 {
 	return proj_mat;
 }
 
-void Window::setContextCurrent()
+void CorE::Window::setContextCurrent()
 {
 	//glfwMakeContextCurrent(handle);
 }
 
-void Window::setSize(unsigned int w, unsigned int h)
+void CorE::Window::setSize(unsigned int w, unsigned int h)
 {
 	//glfwSetWindowSize(handle, w, h);
 	this->width = w;
 	this->height = h;
 }
 
-void Window::setPos(unsigned int x, unsigned int y)
+void CorE::Window::setPos(unsigned int x, unsigned int y)
 {
 	//glfwSetWindowPos(handle, x, y);
 	this->x_pos = x;
@@ -241,19 +241,19 @@ void Window::setShouldClose(bool b)
 }
 */
 
-void Window::setNearClip(float z_near)
+void CorE::Window::setNearClip(float z_near)
 {
 	this->z_near = z_near;
 	refreshProjMat();
 }
 
-void Window::setFarClip(float z_far)
+void CorE::Window::setFarClip(float z_far)
 {
 	this->z_far = z_far;
 	refreshProjMat();
 }
 
-void Window::setFieldOfView(float fov)
+void CorE::Window::setFieldOfView(float fov)
 {
 	this->fov = fov;
 	refreshProjMat();

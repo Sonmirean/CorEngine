@@ -1,28 +1,36 @@
 
 #pragma once
 
-// TODO - make a Vec class with ability to assign size upon creation.
-
-// 4-dimensional signed float vector suitable for doing math on it.
-struct Vec4
+namespace CorE
 {
-	float val[4];
+	namespace math
+	{
 
-	float& x();
-	float& y();
-	float& z();
-	float& w();
+		// TODO - make a Vec class with ability to assign size upon creation.
 
-	float& operator[](int dim);
-};
+		// 4-dimensional signed float vector suitable for doing math on it.
+		struct Vec4
+		{
+			float val[4];
 
-struct Vec3
-{
-	float val[3];
+			float& x();
+			float& y();
+			float& z();
+			float& w();
 
-	float& x();
-	float& y();
-	float& z();
+			float& operator[](int dim);
+		};
 
-	float& operator[](int dim);
-};
+		struct Vec3
+		{
+			float val[3];
+
+			float& x();
+			float& y();
+			float& z();
+
+			float& operator[](int dim);
+		};
+
+	}
+}
