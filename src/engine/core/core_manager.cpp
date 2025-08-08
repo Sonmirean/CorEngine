@@ -1,8 +1,6 @@
 
 #include <iostream>
 
-#include "CorEngine.hpp"
-
 #include "core_manager.hpp"
 #include "window_manager.hpp"
 

@@ -2,6 +2,9 @@
 
 #include <thread>
 
+#define CORENGINE_USE_PLATFORM_WIN32
+#include "corengine.hpp"
+
 #include "loop_manager.hpp"
 #include "short_type.hpp"
 #include "debug.hpp"

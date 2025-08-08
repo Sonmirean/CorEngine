@@ -6,28 +6,31 @@
 #include "window_manager.hpp"
 #include "matrix.hpp"
 
-void createSurfaceDTD(const VkDisplaySurfaceCreateInfoKHR* p_info, VkSurfaceKHR* p_surface)
+#ifdef CORENGINE_USE_PLATFORM_WIN32
+void CorE::Window::initWin32Surface(HINSTANCE hinstance, HWND hwnd)
 {
+	const wchar_t* new_title = nullptr;
 
-}
+	std::string old_title_str;
+	old_title_str = title;
 
-/*
-static void initVkSurface(GLFWwindow* p_window, VkSurfaceKHR* p_surface)
-{
-	#if defined(WIN32)
-		VkWin32SurfaceCreateInfoKHR info
-		{
-			.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
-			.hinstance = GetModuleHandle(nullptr),
-			.hwnd = glfwGetWin32Window(p_window),
-		};
-		
-		ensureVkSuccess(vkCreateWin32SurfaceKHR(Application::instance, &info, nullptr, p_surface));
-	#else
-		throw std::exception("Your OS is not supported yet.");
-	#endif
+	std::string new_title_str;
+	for (size_t i = 0; i < old_title_str.length(); i++)
+	{
+		new_title_str += static_cast<wchar_t>(old_title_str[i]);
+	}
+
+	std::cout << new_title;
+
+
+	VkWin32SurfaceCreateInfoKHR info{};
+	info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+	info.hinstance = hinstance;
+	info.hwnd = hwnd;
+
+	ensureVkSuccess(vkCreateWin32SurfaceKHR(Application::instance, &info, nullptr, &vk_surface));
 }
-*/
+#endif 
 
 CorE::Window::Window(CorE::WindowProperties* props) :
 		title(props->title), 

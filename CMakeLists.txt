@@ -12,29 +12,37 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20) 
 endif()
 
-project ("CorEngine" VERSION 0.1.4.1 LANGUAGES "CXX")
+project ("CorEngine" VERSION 0.1.4.2 LANGUAGES "CXX")
 
-configure_file(${CMAKE_SOURCE_DIR}/CorEngine.in ${CMAKE_SOURCE_DIR}/CorEngine.hpp)
+configure_file(${CMAKE_SOURCE_DIR}/backend/ver.cmake.in ${CMAKE_SOURCE_DIR}/backend/ver.hpp)
 
-file(GLOB_RECURSE SRC "src/*.cpp")
-add_library(CorEngine STATIC ${SRC})
+file(GLOB_RECURSE PUBLIC_SOURCE "src/*.cpp")
+add_library(CorEngine STATIC ${PUBLIC_SOURCE})
 
+# public headers path
 target_include_directories(CorEngine PUBLIC 
-""
 "include"
 "include/auxiliary"
 "include/engine"
 "include/engine/audio"
 "include/engine/core"
 "include/engine/core/math"
+"include/engine/core/windowing"
 "include/engine/graphics"
 "include/engine/input"
 "include/engine/physics"
 )
 
+# private headers path
+target_include_directories(CorEngine PRIVATE 
+"backend"
+)
+
+
+
+
+
 
 # Vulkan
 find_package(Vulkan REQUIRED) 
 target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

@@ -3,6 +3,9 @@
 #include <thread>
 #include <stdexcept>
 
+#define CORENGINE_USE_PLATFORM_WIN32
+#include "corengine.hpp"
+
 #include "debug.hpp"
 #include "short_type.hpp"
 #include "data_types.hpp"
@@ -11,6 +14,11 @@
 namespace CorE
 {
 
+	namespace DtD
+	{
+		// TODO - directly to display
+	}
+
 	/**
 	* Declares a set of properties to be used while creating a Window object.
 	*
@@ -18,8 +26,6 @@ namespace CorE
 	* @param width Desired width of the window (in pixels). Must be greater than zero.
 	* @param height Desired height of the window (in pixels). Must be greater than zero.
 	* @param v_sync Enable vertical synchronization or not.
-	* @param monitor The monitor to use for full screen mode, or `nullptr` for windowed mode.
-	* @param share The window whose context to share resources with, or `nullptr` to not share resources.
 	* @param fov Field of View parameter of the window, or `nullptr`. Must be given in radians.
 	* @param proj_mat A projection matrix to be used by the window, or `nullptr`.
 	* @param x_pos Desired X position after creation.
@@ -29,12 +35,10 @@ namespace CorE
 	*/
 	struct WindowProperties
 	{
-		const char* title = nullptr;
+		const char*			   title = nullptr;
 		unsigned int		   width = 500;
 		unsigned int		   height = 300;
 		bool				   v_sync = true;
-		//GLFWmonitor*		   monitor = nullptr;
-		//GLFWwindow*		   share = nullptr;
 		float				   fov = 1.0471975511965976f;
 		CorE::math::Mat4x4	   proj_mat;
 		unsigned int		   x_pos = 500;
@@ -57,38 +61,53 @@ namespace CorE
 	{
 	public:
 
+		void initWin32Surface(HINSTANCE hinstance, HWND hwnd);
+
 	
 		#ifdef CORENGINE_USE_PLATFORM_ANDROID
+		void initAndroidSurface(ANativeWindow* p_window);
 
 		#elif defined CORENGINE_USE_PLATFORM_WAYLAND
+		void initWaylandSurface(wl_display* p_display, wl_surface* p_surface);
 
 		#elif defined CORENGINE_USE_PLATFORM_WIN32
-
-		void initWin32Surface
+		void initWin32Surface(HINSTANCE hinstance, HWND hwnd);
 
 		#elif defined CORENGINE_USE_PLATFORM_XCB
+		void initXCBSurface(xcb_connection_t* p_connection, xcb_window_t window);
 
 		#elif defined CORENGINE_USE_PLATFORM_XLIB
+		void initXLibSurface(Display* p_display, Window window);
 
 		#elif defined CORENGINE_USE_PLATFORM_DIRECTFB
+		void initDirectFBSurface(IDirectFB* p_interface, IDirectFBSurface* p_surface);
 
 		#elif defined CORENGINE_USE_PLATFORM_XRANDR
+		void initXRandRSurface();
 
 		#elif defined CORENGINE_USE_PLATFORM_GGP
+		void initGoogleGamesSurface(GgpStreamDescriptor stream_descriptor);
 
 		#elif defined CORENGINE_USE_PLATFORM_IOS
+		void initIOSSurface();
 
 		#elif defined CORENGINE_USE_PLATFORM_MACOS
+		void initMacOSSurface();
 
 		#elif defined CORENGINE_USE_PLATFORM_OHOS
+		void initOpenHarmonySurface();
 
 		#elif defined CORENGINE_USE_PLATFORM_VI
+		void initVISurface();
 
 		#elif defined CORENGINE_USE_PLATFORM_FUCHSIA
+		void initFuchsiaSurface(zx_handle_t image_pipe);
 
 		#elif defined CORENGINE_USE_PLATFORM_METAL
+		void initMetalSurface();
 
 		#elif defined CORENGINE_USE_PLATFORM_QNX
+		void initQNXSurface();
 
 		#endif
 	
@@ -179,9 +198,7 @@ namespace CorE
 
 		friend struct Application;
 
-		uint32_t id;
-
-		VkSurfaceKHR vk_surface;
+		uint32_t engine_id;
 
 		const char*		   title;
 		unsigned int	   width;
@@ -194,39 +211,57 @@ namespace CorE
 		float			   z_near;
 		float			   z_far;
 
+		VkSurfaceKHR vk_surface;
 
 		#ifdef CORENGINE_USE_PLATFORM_ANDROID
+		ANativeWindow* p_android_window_handle;
 
 		#elif defined CORENGINE_USE_PLATFORM_WAYLAND
+		wl_display* p_wayland_display;
+		wl_surface* p_wayland_surface;
 
 		#elif defined CORENGINE_USE_PLATFORM_WIN32
-
-		HINSTANCE windows_hinstance;
-		HWND	  windows_handle;
+		HINSTANCE windows_window_instance;
+		HWND	  windows_window_handle;
 
 		#elif defined CORENGINE_USE_PLATFORM_XCB
+		xcb_connection_t* p_xcb_server_connection;
+		xcb_window_t	  xcb_window;
 
 		#elif defined CORENGINE_USE_PLATFORM_XLIB
+		Display* p_xlib_display;
+		Window	 xlib_window;
 
 		#elif defined CORENGINE_USE_PLATFORM_DIRECTFB
+		IDirectFB*		  p_directfb_interface;
+		IDirectFBSurface* p_directfb_surface;
 
 		#elif defined CORENGINE_USE_PLATFORM_XRANDR
 
 		#elif defined CORENGINE_USE_PLATFORM_GGP
+		GgpStreamDescriptor google_games_stream_descriptor;
 
 		#elif defined CORENGINE_USE_PLATFORM_IOS
+		const void* p_ios_view_object;
 
 		#elif defined CORENGINE_USE_PLATFORM_MACOS
+		const void* p_macos_view_object;
 
 		#elif defined CORENGINE_USE_PLATFORM_OHOS
+		OHNativeWindow* p_openharmony_window;
 
 		#elif defined CORENGINE_USE_PLATFORM_VI
+		void* p_vi_window;
 
 		#elif defined CORENGINE_USE_PLATFORM_FUCHSIA
+		zx_handle_t fuchsia_image_pipe;
 
 		#elif defined CORENGINE_USE_PLATFORM_METAL
+		CAMetalLayer* p_metal_layer;
 
 		#elif defined CORENGINE_USE_PLATFORM_QNX
+		struct _screen_context* p_qnx_context;
+		struct _screen_window*  p_qnx_window;
 
 		#endif
 

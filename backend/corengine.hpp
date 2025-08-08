@@ -1,0 +1,58 @@
+
+// Top-level header of CorEngine.
+
+#pragma once
+
+#include "ver.hpp"
+
+#ifdef CORENGINE_USE_PLATFORM_ANDROID
+#define VK_USE_PLATFORM_ANDROID_KHR
+
+#elif defined CORENGINE_USE_PLATFORM_WAYLAND
+#define VK_USE_PLATFORM_WAYLAND_KHR
+
+#elif defined CORENGINE_USE_PLATFORM_WIN32
+#define VK_USE_PLATFORM_WIN32_KHR
+
+#elif defined CORENGINE_USE_PLATFORM_XCB
+#define VK_USE_PLATFORM_XCB_KHR
+
+#elif defined CORENGINE_USE_PLATFORM_XLIB
+#define VK_USE_PLATFORM_XLIB_KHR
+
+#elif defined CORENGINE_USE_PLATFORM_DIRECTFB
+#define VK_USE_PLATFORM_DIRECTFB_EXT
+
+#elif defined CORENGINE_USE_PLATFORM_XRANDR
+#define VK_USE_PLATFORM_XLIB_XRANDR_EXT
+
+#elif defined CORENGINE_USE_PLATFORM_GGP
+#define VK_USE_PLATFORM_GGP
+
+#elif defined CORENGINE_USE_PLATFORM_IOS
+#define VK_USE_PLATFORM_IOS_MVK
+
+#elif defined CORENGINE_USE_PLATFORM_MACOS
+#define VK_USE_PLATFORM_MACOS_MVK
+
+#elif defined CORENGINE_USE_PLATFORM_OHOS
+#define VK_USE_PLATFORM_OHOS
+
+#elif defined CORENGINE_USE_PLATFORM_VI
+#define VK_USE_PLATFORM_VI_NN
+
+#elif defined CORENGINE_USE_PLATFORM_FUCHSIA
+#define VK_USE_PLATFORM_FUCHSIA
+
+#elif defined CORENGINE_USE_PLATFORM_METAL
+#define VK_USE_PLATFORM_METAL_EXT
+
+#elif defined CORENGINE_USE_PLATFORM_QNX
+#define VK_USE_PLATFORM_SCREEN_QNX
+
+#else
+//#error Please define a header corresponding to your platform before including CorEngine.
+
+#endif
+
+#include <vulkan/vulkan.h>
