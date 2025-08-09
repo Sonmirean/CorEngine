@@ -61,8 +61,6 @@ namespace CorE
 	{
 	public:
 
-		void initWin32Surface(HINSTANCE hinstance, HWND hwnd);
-
 	
 		#ifdef CORENGINE_USE_PLATFORM_ANDROID
 		void initAndroidSurface(ANativeWindow* p_window);
