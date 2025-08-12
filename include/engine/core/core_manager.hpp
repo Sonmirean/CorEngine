@@ -376,7 +376,7 @@ namespace CorE
 		static vec<PhysicalDeviceGroup> phys_device_groups;
 
 		// Windows of this application.
-		static vec<Window*> app_windows;
+		static vec<CorE::Windowing::Window*> app_windows;
 
 
 		// Returns quantity of app windows.

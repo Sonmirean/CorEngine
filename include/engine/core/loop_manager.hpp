@@ -15,7 +15,7 @@ namespace CorE
 	struct HeartProperties
 	{
 		unsigned int fps_cap = 60;
-		vec<Window*> p_attached_windows;
+		vec<CorE::Windowing::Window*> p_attached_windows;
 	};
 
 	// This class represents an asynchronous rendering cycle.
@@ -62,7 +62,7 @@ namespace CorE
 		unsigned int fps = 0;
 		float delta = 0;
 
-		std::vector<Window*> p_attached_windows;
+		std::vector<CorE::Windowing::Window*> p_attached_windows;
 
 		unsigned const long NANOSECOND = 1000000000L;
 		const long FRAMERATE = 1000L;

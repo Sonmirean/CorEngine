@@ -336,7 +336,7 @@ void CorE::Application::finalCleanup()
 
 	for (size_t i = 0; i < app_windows.size(); i++)
 	{
-		app_windows[i]->~Window();
+		CorE::Application::app_windows[i]->~Window();
 	}
 
 	//glfwTerminate();

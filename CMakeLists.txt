@@ -19,6 +19,46 @@ configure_file(${CMAKE_SOURCE_DIR}/backend/ver.cmake.in ${CMAKE_SOURCE_DIR}/back
 file(GLOB_RECURSE PUBLIC_SOURCE "src/*.cpp")
 add_library(CorEngine STATIC ${PUBLIC_SOURCE})
 
+file(GLOB_RECURSE PUBLIC_HEADERS "include/*.hpp")
+
+target_link_directories(
+CorEngine
+PUBLIC
+"src/auxiliary"
+"src/engine/audio"
+"src/engine/core"
+"src/engine/core/math"
+"src/engine/core/windowing"
+"src/engine/graphics"
+"src/engine/input"
+"src/engine/physics"
+)
+
+add_subdirectory(
+"src/auxiliary"
+)
+add_subdirectory(
+"src/engine/audio"
+)
+add_subdirectory(
+"src/engine/core"
+)
+add_subdirectory(
+"src/engine/core/math"
+)
+add_subdirectory(
+"src/engine/core/windowing"
+)
+add_subdirectory(
+"src/engine/graphics"
+)
+add_subdirectory(
+"src/engine/input"
+)
+add_subdirectory(
+"src/engine/physics"
+)
+
 # public headers path
 target_include_directories(CorEngine PUBLIC 
 "include"
@@ -38,11 +78,20 @@ target_include_directories(CorEngine PRIVATE
 "backend"
 )
 
-
-
-
-
-
 # Vulkan
 find_package(Vulkan REQUIRED) 
-target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan)
+
+target_link_libraries(
+	CorEngine
+	PUBLIC
+
+	Vulkan::Vulkan
+	auxiliary
+	audio
+	core
+	"math"
+	windowing
+	graphics
+	"input"
+	physics
+)
