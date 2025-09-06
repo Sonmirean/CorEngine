@@ -8,7 +8,7 @@ endif()
 
 project("CorEngine" VERSION 0.1.4.3 LANGUAGES "CXX")
 
-configure_file("${CMAKE_SOURCE_DIR}/include/backend/ver.cmake.in" "${CMAKE_SOURCE_DIR}/include/backend/ver.hpp")
+configure_file("${CMAKE_SOURCE_DIR}/include/backend/version.cmake.in" "${CMAKE_SOURCE_DIR}/include/backend/version.hpp")
 
 file(GLOB_RECURSE PUBLIC_SOURCE "src/*.cpp")
 add_library(CorEngine STATIC ${PUBLIC_SOURCE})

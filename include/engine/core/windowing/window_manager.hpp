@@ -3,7 +3,6 @@
 #include <thread>
 #include <stdexcept>
 
-#define CORENGINE_USE_PLATFORM_WIN32
 #include "corengine.hpp"
 
 #include "debug.hpp"
@@ -15,11 +14,6 @@ namespace CorE
 {
 	namespace Windowing
 	{
-		namespace DtD
-		{
-			// TODO - directly to display
-		}
-
 
 		/**
 		* Declares a set of properties to be used while creating a Window object.
@@ -50,20 +44,15 @@ namespace CorE
 		};
 
 		/*
-		This class represents a window object.
-
-		There are stored essential rendering parameters,
-		such as near and far clip planes distance,
-		field of view, projection matrix, etc.
-
-		Accepts any GLFW window hints called before creation.
-
+		* This class represents a window object.
+		* 
 		*/
-		class Window
+		struct Window
 		{
 		public:
 
-	
+			// Both constructor and destructor of the class are platform-dependent.
+
 			#ifdef CORENGINE_USE_PLATFORM_ANDROID
 			void initAndroidSurface(ANativeWindow* p_window);
 
@@ -71,7 +60,28 @@ namespace CorE
 			void initWaylandSurface(wl_display* p_display, wl_surface* p_surface);
 
 			#elif defined CORENGINE_USE_PLATFORM_WIN32
-			void initWin32Surface(HINSTANCE hinstance, HWND hwnd);
+			// A handle for a window for the Windows platform.
+			// This handle can be used to initialize CorE::Windowing::Window
+			//
+			// TODO - add support for extended window styles
+			struct Win32WindowHandle
+			{
+				friend struct Window;
+
+				Win32WindowHandle(DWORD window_style, LPCSTR window_name, DWORD class_style,
+					LPCSTR class_name, int x, int y, int w, int h);
+				~Win32WindowHandle();
+
+
+			private:
+				HWND hwnd;
+				HINSTANCE hinstance;
+				WNDCLASS wndclass;
+
+			};
+
+			Window(WindowProperties* p_props, Win32WindowHandle* p_handle);
+			~Window();
 
 			#elif defined CORENGINE_USE_PLATFORM_XCB
 			void initXCBSurface(xcb_connection_t* p_connection, xcb_window_t window);
@@ -112,9 +122,7 @@ namespace CorE
 			#endif
 	
 
-			Window(WindowProperties* props);
-
-			~Window();
+			
 
 			/*
 			bool operator ==(Window win);
@@ -221,8 +229,7 @@ namespace CorE
 			wl_surface* p_wayland_surface;
 
 			#elif defined CORENGINE_USE_PLATFORM_WIN32
-			HINSTANCE windows_window_instance;
-			HWND	  windows_window_handle;
+			Win32WindowHandle* p_win32_handle;
 
 			#elif defined CORENGINE_USE_PLATFORM_XCB
 			xcb_connection_t* p_xcb_server_connection;

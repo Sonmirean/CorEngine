@@ -392,6 +392,14 @@ namespace CorE
 
 		Application() = delete;
 
+		static void inline checkVkInstance()
+		{
+			if (instance == nullptr)
+			{
+				throw std::runtime_error("This operation cannot be performed before initializing Vulkan.");
+			}
+		}
+
 	}; // struct Application
 
 }

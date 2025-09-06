@@ -6,80 +6,82 @@
 #include "window_manager.hpp"
 #include "matrix.hpp"
 
-#ifdef CORENGINE_USE_PLATFORM_WIN32
-void CorE::Windowing::Window::initWin32Surface(HINSTANCE hinstance, HWND hwnd)
+#ifdef CORENGINE_USE_PLATFORM_ANDROID
+void initAndroidSurface(ANativeWindow* p_window);
+
+#elif defined CORENGINE_USE_PLATFORM_WAYLAND
+void initWaylandSurface(wl_display* p_display, wl_surface* p_surface);
+
+#elif defined CORENGINE_USE_PLATFORM_WIN32
+CorE::Windowing::Window::Window(WindowProperties* p_props, Win32WindowHandle* p_handle) :
+	title(p_props->title),
+	width(p_props->width),
+	height(p_props->height),
+	v_sync(p_props->v_sync),
+	fov(p_props->fov),
+	proj_mat(p_props->proj_mat),
+	x_pos(p_props->x_pos),
+	y_pos(p_props->y_pos),
+	z_near(p_props->z_near),
+	z_far(p_props->z_far),
+
+	p_win32_handle(p_handle)
 {
-	const wchar_t* new_title = nullptr;
-
-	std::string old_title_str;
-	old_title_str = title;
-
-	std::string new_title_str;
-	for (size_t i = 0; i < old_title_str.length(); i++)
-	{
-		new_title_str += static_cast<wchar_t>(old_title_str[i]);
-	}
-
-	std::cout << new_title;
-
+	CorE::Application::checkVkInstance();
+	ShowWindow(p_handle->hwnd, 1);
 
 	VkWin32SurfaceCreateInfoKHR info{};
-	info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-	info.hinstance = hinstance;
-	info.hwnd = hwnd;
+	info.hwnd = p_handle->hwnd;
+	info.hinstance = p_handle->hinstance;
 
 	ensureVkSuccess(vkCreateWin32SurfaceKHR(CorE::Application::instance, &info, nullptr, &vk_surface));
-}
-#endif 
 
-CorE::Windowing::Window::Window(CorE::Windowing::WindowProperties* props) :
-		title(props->title), 
-		width(props->width), 
-		height(props->height), 
-		v_sync(props->v_sync),
-		//share(props->share),
-		fov(props->fov),
-		proj_mat(props->proj_mat),
-		x_pos(props->x_pos),
-		y_pos(props->y_pos),
-		z_near(props->z_near),
-		z_far(props->z_far)
-{
-	if (CorE::Application::instance == nullptr)
-	{
-		throw std::runtime_error("Cannot create window before initializing Vulkan.");
-	}
-
-	/*
-	handle = glfwCreateWindow(width, height, title, props->monitor ? props->monitor : nullptr, props->share ? props->share : nullptr);
-	if (!handle)
-	{
-		throw std::runtime_error("Failed to create window.");
-	}
-
-	GLFWwindow* prev = glfwGetCurrentContext();
-	glfwMakeContextCurrent(handle);
-
-	if (v_sync) {
-		glfwSwapInterval(1);
-	}
-	glfwMakeContextCurrent(prev);
-	refreshProjMat();
-	setPos(x_pos, y_pos);
-	Application::app_windows.push_back(this);
-	glfwShowWindow(handle);
-	
-
-	initVkSurface(handle, &vk_surface);
-
-	*/
 }
 
 CorE::Windowing::Window::~Window()
 {
 	vkDestroySurfaceKHR(CorE::Application::instance, vk_surface, nullptr);
-	//glfwDestroyWindow(handle);
 }
+
+#elif defined CORENGINE_USE_PLATFORM_XCB
+void initXCBSurface(xcb_connection_t* p_connection, xcb_window_t window);
+
+#elif defined CORENGINE_USE_PLATFORM_XLIB
+void initXLibSurface(Display* p_display, Window window);
+
+#elif defined CORENGINE_USE_PLATFORM_DIRECTFB
+void initDirectFBSurface(IDirectFB* p_interface, IDirectFBSurface* p_surface);
+
+#elif defined CORENGINE_USE_PLATFORM_XRANDR
+void initXRandRSurface();
+
+#elif defined CORENGINE_USE_PLATFORM_GGP
+void initGoogleGamesSurface(GgpStreamDescriptor stream_descriptor);
+
+#elif defined CORENGINE_USE_PLATFORM_IOS
+void initIOSSurface();
+
+#elif defined CORENGINE_USE_PLATFORM_MACOS
+void initMacOSSurface();
+
+#elif defined CORENGINE_USE_PLATFORM_OHOS
+void initOpenHarmonySurface();
+
+#elif defined CORENGINE_USE_PLATFORM_VI
+void initVISurface();
+
+#elif defined CORENGINE_USE_PLATFORM_FUCHSIA
+void initFuchsiaSurface(zx_handle_t image_pipe);
+
+#elif defined CORENGINE_USE_PLATFORM_METAL
+void initMetalSurface();
+
+#elif defined CORENGINE_USE_PLATFORM_QNX
+void initQNXSurface();
+
+#endif
+
+
 
 // THIS METHOD IS NOT WORKING, Mat4x4::projection() HAS EMPTY DEFINITION!!!
 // TODO
