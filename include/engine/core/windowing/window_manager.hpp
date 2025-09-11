@@ -3,12 +3,12 @@
 #include <thread>
 #include <stdexcept>
 
-#include "corengine.hpp"
+#include "engine/core/windowing/window_manager.hpp"
 
-#include "debug.hpp"
-#include "short_type.hpp"
-#include "data_types.hpp"
-#include "matrix.hpp"
+#include "auxiliary/debug.hpp"
+#include "auxiliary/short_type.hpp"
+#include "auxiliary/data_types.hpp"
+#include "engine/core/math/matrix.hpp"
 
 namespace CorE
 {
@@ -51,6 +51,9 @@ namespace CorE
 		{
 		public:
 
+			// default constructor, do not use
+			Window();
+
 			// Both constructor and destructor of the class are platform-dependent.
 
 			#ifdef CORENGINE_USE_PLATFORM_ANDROID
@@ -66,10 +69,11 @@ namespace CorE
 			// TODO - add support for extended window styles
 			struct Win32WindowHandle
 			{
+			public:
 				friend struct Window;
 
 				Win32WindowHandle(DWORD window_style, LPCSTR window_name, DWORD class_style,
-					LPCSTR class_name, int x, int y, int w, int h);
+					LPCSTR class_name);
 				~Win32WindowHandle();
 
 

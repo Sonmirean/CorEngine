@@ -1,7 +1,7 @@
 #pragma once
 
 #define GLFW_INCLUDE_VULKAN
-#include "data_types.hpp"
+#include "auxiliary/data_types.hpp"
 
 /**
 * Loads 3-dimensional model vertex data from .obj file.

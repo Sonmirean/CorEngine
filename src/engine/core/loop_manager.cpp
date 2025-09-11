@@ -3,13 +3,12 @@
 #include <chrono>
 #include <future>
 
-#include "window_manager.hpp"
-#include "loop_manager.hpp"
+#include "include/engine/core/windowing/window_manager.hpp"
+#include "include/engine/core/loop_manager.hpp"
 
 
 CorE::Heart::Heart(HeartProperties* props) :
-	fps_cap(props->fps_cap),
-	p_attached_windows(props->p_attached_windows)
+	fps_cap(props->fps_cap)
 {
 
 }

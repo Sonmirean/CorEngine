@@ -1,6 +1,6 @@
 ﻿# Main cmake list for CorEngine.
 
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.10)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20) 
@@ -17,16 +17,6 @@ file(GLOB_RECURSE PUBLIC_HEADERS "include/*.hpp")
 
 target_include_directories(CorEngine PRIVATE 
 "include"
-"include/auxiliary"
-"include/backend"
-"include/engine"
-"include/engine/audio"
-"include/engine/core"
-"include/engine/core/math"
-"include/engine/core/windowing"
-"include/engine/graphics"
-"include/engine/input"
-"include/engine/physics"
 )
 
 # Vulkan

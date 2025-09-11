@@ -1,10 +1,11 @@
 
 #include <iostream>
-#include <thread>
 
-#include "core_manager.hpp"
-#include "window_manager.hpp"
-#include "matrix.hpp"
+#include "engine/core/windowing/window_manager.hpp"
+#include "engine/core/math/matrix.hpp"
+
+
+CorE::Windowing::Window::Window() {}
 
 #ifdef CORENGINE_USE_PLATFORM_ANDROID
 void initAndroidSurface(ANativeWindow* p_window);
@@ -13,6 +14,40 @@ void initAndroidSurface(ANativeWindow* p_window);
 void initWaylandSurface(wl_display* p_display, wl_surface* p_surface);
 
 #elif defined CORENGINE_USE_PLATFORM_WIN32
+
+CorE::Windowing::Window::Win32WindowHandle::Win32WindowHandle(DWORD window_style, LPCSTR window_name,
+	DWORD class_style, LPCSTR class_name)
+{
+	
+	hinstance = GetModuleHandle(NULL);
+
+	WNDCLASS wclass{};
+	wclass.style = class_style;
+	wclass.lpfnWndProc = DefWindowProc;
+	wclass.cbClsExtra = 0;
+	wclass.cbWndExtra = 0;
+	wclass.hInstance = hinstance;
+	wclass.lpszClassName = class_name;
+	ATOM res = RegisterClass(&wclass);
+	if (!res)
+	{
+		throw std::runtime_error("Failed to register window class.");
+	}
+	wndclass = wclass;
+	hwnd = CreateWindow(class_name, window_name, window_style, 500, 500, 500, 500,
+		nullptr, nullptr, hinstance, nullptr);
+	if (!hwnd)
+	{
+		throw std::runtime_error("Failed to create HWND window handle.");
+	}
+	
+}
+
+CorE::Windowing::Window::Win32WindowHandle::~Win32WindowHandle()
+{
+	DestroyWindow(hwnd);
+}
+
 CorE::Windowing::Window::Window(WindowProperties* p_props, Win32WindowHandle* p_handle) :
 	title(p_props->title),
 	width(p_props->width),
@@ -27,15 +62,17 @@ CorE::Windowing::Window::Window(WindowProperties* p_props, Win32WindowHandle* p_
 
 	p_win32_handle(p_handle)
 {
-	CorE::Application::checkVkInstance();
-	ShowWindow(p_handle->hwnd, 1);
+	
+	//Application::checkVkInstance();
+	SetWindowPos(p_handle->hwnd, nullptr, x_pos, y_pos, width, height, SWP_SHOWWINDOW);
+
 
 	VkWin32SurfaceCreateInfoKHR info{};
 	info.hwnd = p_handle->hwnd;
 	info.hinstance = p_handle->hinstance;
 
-	ensureVkSuccess(vkCreateWin32SurfaceKHR(CorE::Application::instance, &info, nullptr, &vk_surface));
-
+	ensureVkSuccess(vkCreateWin32SurfaceKHR(Application::instance, &info, nullptr, &vk_surface));
+	
 }
 
 CorE::Windowing::Window::~Window()
@@ -80,7 +117,6 @@ void initMetalSurface();
 void initQNXSurface();
 
 #endif
-
 
 
 // THIS METHOD IS NOT WORKING, Mat4x4::projection() HAS EMPTY DEFINITION!!!

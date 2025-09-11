@@ -3,11 +3,12 @@
 #include <thread>
 
 #define CORENGINE_USE_PLATFORM_WIN32
-#include "corengine.hpp"
+#include "backend/corengine.hpp"
 
-#include "loop_manager.hpp"
-#include "short_type.hpp"
-#include "debug.hpp"
+#include "engine/core/loop_manager.hpp"
+#include "engine/core/windowing/window_manager.hpp"
+#include "auxiliary/short_type.hpp"
+#include "auxiliary/debug.hpp"
 
 namespace CorE
 {
@@ -376,7 +377,7 @@ namespace CorE
 		static vec<PhysicalDeviceGroup> phys_device_groups;
 
 		// Windows of this application.
-		static vec<CorE::Windowing::Window*> app_windows;
+		static vec<CorE::Window*> app_windows;
 
 
 		// Returns quantity of app windows.

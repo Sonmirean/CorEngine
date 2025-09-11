@@ -1,11 +1,11 @@
 
 #include <iostream>
 
-#include "core_manager.hpp"
-#include "window_manager.hpp"
+#include "engine/core/core_manager.hpp"
+#include "engine/core/windowing/window_manager.hpp"
 
-#include "short_type.hpp"
-#include "debug.hpp"
+#include "auxiliary/short_type.hpp"
+#include "auxiliary/debug.hpp"
 
 CorE::QueueFamily::QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties* p_props, uint32_t index)
 	: p_parent(p_parent), props(*p_props), index(index)
@@ -333,12 +333,6 @@ void CorE::Application::initVulkan(const char* app_name, uint32_t app_version[4]
 void CorE::Application::finalCleanup()
 {
 	vkDestroyInstance(Application::instance, nullptr);
-
-	for (size_t i = 0; i < app_windows.size(); i++)
-	{
-		CorE::Application::app_windows[i]->~Window();
-	}
-
 	//glfwTerminate();
 } // void Application::finalCleanup()
 

@@ -1,5 +1,5 @@
 
-#include "debug.hpp"
+#include "auxiliary/debug.hpp"
 
 void ensureVkSuccess(VkResult res)
 {

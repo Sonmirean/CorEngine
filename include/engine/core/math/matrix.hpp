@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "short_type.hpp"
-#include "vector.hpp"
+#include "engine/core/math/matrix.hpp"
+#include "engine/core/math/vector.hpp"
 
 namespace CorE
 {

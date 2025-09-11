@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 
-#include "loaders.hpp"
+#include "auxiliary/loaders.hpp"
 
 static void processLine(std::vector<std::string> storage, size_t offset, char separation, std::string line)
 {

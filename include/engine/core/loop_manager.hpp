@@ -2,7 +2,7 @@
 
 #include <chrono>
 #include <future>
-#include "window_manager.hpp"
+#include "engine/core/windowing/window_manager.hpp"
 
 namespace CorE
 {
@@ -15,7 +15,6 @@ namespace CorE
 	struct HeartProperties
 	{
 		unsigned int fps_cap = 60;
-		vec<CorE::Windowing::Window*> p_attached_windows;
 	};
 
 	// This class represents an asynchronous rendering cycle.
@@ -61,8 +60,6 @@ namespace CorE
 
 		unsigned int fps = 0;
 		float delta = 0;
-
-		std::vector<CorE::Windowing::Window*> p_attached_windows;
 
 		unsigned const long NANOSECOND = 1000000000L;
 		const long FRAMERATE = 1000L;
