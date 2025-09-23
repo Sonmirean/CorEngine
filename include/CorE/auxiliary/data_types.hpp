@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "auxiliary/short_type.hpp"
+#include "CorE/auxiliary/short_type.hpp"
 
 
 namespace Dim2

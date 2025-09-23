@@ -3,8 +3,8 @@
 #include <chrono>
 #include <future>
 
-#include "include/engine/core/windowing/window_manager.hpp"
-#include "include/engine/core/loop_manager.hpp"
+#include "CorE/engine/windowing/window_manager.hpp"
+#include "CorE/engine/loop_manager.hpp"
 
 
 CorE::Heart::Heart(HeartProperties* props) :

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "backend/version.hpp"
+#include "CorE/auxiliary/version.hpp"
 
 #ifdef CORENGINE_USE_PLATFORM_ANDROID
 #define VK_USE_PLATFORM_ANDROID_KHR

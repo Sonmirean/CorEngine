@@ -1,8 +1,8 @@
 
 #include <iostream>
 
-#include "engine/core/windowing/window_manager.hpp"
-#include "engine/core/math/matrix.hpp"
+#include "CorE/engine/windowing/window_manager.hpp"
+#include "CorE/math/matrix.hpp"
 
 
 CorE::Windowing::Window::Window() {}

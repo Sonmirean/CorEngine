@@ -3,12 +3,12 @@
 #include <thread>
 
 #define CORENGINE_USE_PLATFORM_WIN32
-#include "backend/corengine.hpp"
+#include "CorE/auxiliary/corengine.hpp"
 
-#include "engine/core/loop_manager.hpp"
-#include "engine/core/windowing/window_manager.hpp"
-#include "auxiliary/short_type.hpp"
-#include "auxiliary/debug.hpp"
+#include "CorE/engine/loop_manager.hpp"
+#include "CorE/engine/windowing/window_manager.hpp"
+#include "CorE/auxiliary/short_type.hpp"
+#include "CorE/auxiliary/debug.hpp"
 
 namespace CorE
 {

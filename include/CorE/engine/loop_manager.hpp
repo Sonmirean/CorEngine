@@ -2,7 +2,7 @@
 
 #include <chrono>
 #include <future>
-#include "engine/core/windowing/window_manager.hpp"
+#include "CorE/engine/windowing/window_manager.hpp"
 
 namespace CorE
 {

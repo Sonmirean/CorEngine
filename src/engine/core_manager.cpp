@@ -1,11 +1,11 @@
 
 #include <iostream>
 
-#include "engine/core/core_manager.hpp"
-#include "engine/core/windowing/window_manager.hpp"
+#include "CorE/engine/core_manager.hpp"
+#include "CorE/engine/windowing/window_manager.hpp"
 
-#include "auxiliary/short_type.hpp"
-#include "auxiliary/debug.hpp"
+#include "CorE/auxiliary/short_type.hpp"
+#include "CorE/auxiliary/debug.hpp"
 
 CorE::QueueFamily::QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties* p_props, uint32_t index)
 	: p_parent(p_parent), props(*p_props), index(index)

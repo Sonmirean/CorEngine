@@ -3,12 +3,12 @@
 #include <thread>
 #include <stdexcept>
 
-#include "engine/core/windowing/window_manager.hpp"
+#include "CorE/engine/windowing/window_manager.hpp"
 
-#include "auxiliary/debug.hpp"
-#include "auxiliary/short_type.hpp"
-#include "auxiliary/data_types.hpp"
-#include "engine/core/math/matrix.hpp"
+#include "CorE/auxiliary/debug.hpp"
+#include "CorE/auxiliary/short_type.hpp"
+#include "CorE/auxiliary/data_types.hpp"
+#include "CorE/math/matrix.hpp"
 
 namespace CorE
 {
