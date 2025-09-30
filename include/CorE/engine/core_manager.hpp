@@ -372,12 +372,11 @@ namespace CorE
 		// Vulkan instance - basement of everything in Vulkan.
 		static VkInstance instance;
 		// Physical devices found by current Vulkan instance.
-		static vec<PhysicalDevice> phys_devices;
+		static vec<CorE::PhysicalDevice> phys_devices;
 		// List of physical device groups.
-		static vec<PhysicalDeviceGroup> phys_device_groups;
-
+		static vec<CorE::PhysicalDeviceGroup> phys_device_groups;
 		// Windows of this application.
-		static vec<CorE::Window*> app_windows;
+		static vec<CorE::Windowing::Window*> app_windows;
 
 
 		// Returns quantity of app windows.
@@ -402,5 +401,37 @@ namespace CorE
 		}
 
 	}; // struct Application
+
+	namespace TESTS
+	{
+		inline VkInstanceCreateInfo* testInstanceInfoCreation(VkApplicationInfo app_info)
+		{
+			VkInstanceCreateInfo createInfo{};
+
+			createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+			createInfo.pApplicationInfo = &app_info;
+			uint32_t glfwExtensionCount = 0;
+			const char** glfwExtensions = nullptr;
+			createInfo.enabledExtensionCount = glfwExtensionCount;
+			createInfo.ppEnabledExtensionNames = glfwExtensions;
+
+			return &createInfo;
+		}
+		inline VkApplicationInfo testAppInfoCreation(const char* app_name, uint32_t app_version[4])
+		{
+			VkApplicationInfo appInfo{};
+
+			appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+			appInfo.pApplicationName = app_name;
+			appInfo.applicationVersion = VK_MAKE_API_VERSION(app_version[0], app_version[1],
+				app_version[2], app_version[3]);
+			appInfo.apiVersion = VK_API_VERSION_1_0;
+			appInfo.pEngineName = "CorEngine";
+			appInfo.engineVersion = VK_MAKE_API_VERSION(CORENGINE_VERSION_MAJOR,
+				CORENGINE_VERSION_MINOR, CORENGINE_VERSION_PATCH, CORENGINE_VERSION_BUILD);
+
+			return appInfo;
+		}
+	}
 
 }

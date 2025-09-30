@@ -7,6 +7,12 @@
 #include "CorE/auxiliary/short_type.hpp"
 #include "CorE/auxiliary/debug.hpp"
 
+VkInstance CorE::Application::instance{};
+vec<CorE::PhysicalDevice> CorE::Application::phys_devices{};
+vec<CorE::PhysicalDeviceGroup> CorE::Application::phys_device_groups{};
+vec<CorE::Windowing::Window*> CorE::Application::app_windows{};
+
+
 CorE::QueueFamily::QueueFamily(PhysicalDevice* p_parent, VkQueueFamilyProperties* p_props, uint32_t index)
 	: p_parent(p_parent), props(*p_props), index(index)
 {
@@ -255,7 +261,7 @@ namespace
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &app_info;
 		uint32_t glfwExtensionCount = 0;
-		const char** glfwExtensions = /*glfwGetRequiredInstanceExtensions(&glfwExtensionCount)*/nullptr;
+		const char** glfwExtensions = nullptr;
 		createInfo.enabledExtensionCount = glfwExtensionCount;
 		createInfo.ppEnabledExtensionNames = glfwExtensions;
 

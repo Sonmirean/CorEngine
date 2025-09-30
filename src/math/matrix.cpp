@@ -35,7 +35,6 @@ CorE::math::Mat4x4& CorE::math::Mat4x4::transformation(Vec3 scale, Vec3 rotate, 
 	//result[1][1] = scale.x();
 	//result[2][2] = scale.y();
 	//result[3][3] = scale.z();
-	
 
 	return result;
 }
