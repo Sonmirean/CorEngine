@@ -254,7 +254,7 @@ CorE::CommandBuffer::CommandBuffer(VkCommandBuffer vk_handle, CommandPool* p_par
 
 namespace
 {
-	VkInstanceCreateInfo* createVkInstanceInfo(VkApplicationInfo app_info)
+	VkInstanceCreateInfo createVkInstanceInfo(VkApplicationInfo app_info)
 	{
 		VkInstanceCreateInfo createInfo{};
 
@@ -265,7 +265,7 @@ namespace
 		createInfo.enabledExtensionCount = glfwExtensionCount;
 		createInfo.ppEnabledExtensionNames = glfwExtensions;
 
-		return &createInfo;
+		return createInfo;
 	}
 	VkApplicationInfo createVkAppInfo(const char* app_name, uint32_t app_version[4])
 	{
@@ -330,7 +330,8 @@ size_t CorE::Application::getWinQuantity()
 
 void CorE::Application::initVulkan(const char* app_name, uint32_t app_version[4])
 {
-	ensureVkSuccess(vkCreateInstance(createVkInstanceInfo(createVkAppInfo(app_name, app_version)), nullptr, &Application::instance));
+	VkInstanceCreateInfo info = createVkInstanceInfo(createVkAppInfo(app_name, app_version));
+	ensureVkSuccess(vkCreateInstance(&info, nullptr, &Application::instance));
 
 	PhysicalDeviceGroup::enumerateAll();
 	PhysicalDevice::enumerateAll();

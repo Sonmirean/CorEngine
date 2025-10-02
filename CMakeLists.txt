@@ -16,6 +16,9 @@ target_include_directories(
 	$<INSTALL_INTERFACE:include>
 )
 
+# build for weendows
+add_compile_definitions(CORENGINE_USE_PLATFORM_WIN32)
+
 # Vulkan
 find_package(Vulkan REQUIRED) 
 

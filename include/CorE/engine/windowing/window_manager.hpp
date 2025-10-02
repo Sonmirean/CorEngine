@@ -3,7 +3,7 @@
 #include <thread>
 #include <stdexcept>
 
-#include "CorE/engine/windowing/window_manager.hpp"
+#include "CorE/auxiliary/corengine.hpp"
 
 #include "CorE/auxiliary/debug.hpp"
 #include "CorE/auxiliary/short_type.hpp"

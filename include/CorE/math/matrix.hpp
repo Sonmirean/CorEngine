@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "CorE/math/matrix.hpp"
 #include "CorE/math/vector.hpp"
 
 namespace CorE

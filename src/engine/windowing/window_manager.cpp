@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "CorE/engine/windowing/window_manager.hpp"
+#include "CorE/engine/core_manager.hpp"
 #include "CorE/math/matrix.hpp"
 
 
@@ -71,7 +72,7 @@ CorE::Windowing::Window::Window(WindowProperties* p_props, Win32WindowHandle* p_
 	info.hwnd = p_handle->hwnd;
 	info.hinstance = p_handle->hinstance;
 
-	ensureVkSuccess(vkCreateWin32SurfaceKHR(Application::instance, &info, nullptr, &vk_surface));
+	ensureVkSuccess(vkCreateWin32SurfaceKHR(CorE::Application::instance, &info, nullptr, &vk_surface));
 	
 }
 
