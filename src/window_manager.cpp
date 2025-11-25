@@ -8,13 +8,13 @@
 
 CorE::Windowing::Window::Window() {}
 
-#ifdef CORENGINE_USE_PLATFORM_ANDROID
+#if (CORENGINE_PLATFORM == CORENGINE_ANDROID)
 void initAndroidSurface(ANativeWindow* p_window);
 
-#elif defined CORENGINE_USE_PLATFORM_WAYLAND
+#elif (CORENGINE_PLATFORM == CORENGINE_LINUX_WAYLAND)
 void initWaylandSurface(wl_display* p_display, wl_surface* p_surface);
 
-#elif defined CORENGINE_USE_PLATFORM_WIN32
+#elif (CORENGINE_PLATFORM == CORENGINE_WINDOWS)
 
 CorE::Windowing::Window::Win32WindowCreateInfo::Win32WindowCreateInfo(DWORD window_style, LPCSTR window_name,
 	DWORD class_style, LPCSTR class_name)
@@ -79,10 +79,8 @@ CorE::Windowing::Window::~Window()
 	DestroyWindow(hwnd);
 }
 
-#elif defined CORENGINE_USE_PLATFORM_XCB
-void initXCBSurface(xcb_connection_t* p_connection, xcb_window_t window);
 
-#elif defined CORENGINE_USE_PLATFORM_XLIB
+#elif (CORENGINE_PLATFORM == CORENGINE_LINUX_XLIB)
 void initXLibSurface(Display* p_display, Window window);
 
 #elif defined CORENGINE_USE_PLATFORM_DIRECTFB

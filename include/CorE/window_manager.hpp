@@ -15,6 +15,9 @@ namespace CorE
 	namespace Windowing
 	{
 
+
+
+
 		/**
 		* Declares a set of properties to be used while creating a Window object.
 		*
@@ -56,13 +59,13 @@ namespace CorE
 
 			// Both constructor and destructor of the class are platform-dependent.
 
-			#ifdef CORENGINE_USE_PLATFORM_ANDROID
+			#if (CORENGINE_PLATFORM == CORENGINE_ANDROID)
 			void initAndroidSurface(ANativeWindow* p_window);
 
-			#elif defined CORENGINE_USE_PLATFORM_WAYLAND
+			#elif (CORENGINE_PLATFORM == CORENGINE_LINUX_WAYLAND)
 			void initWaylandSurface(wl_display* p_display, wl_surface* p_surface);
 
-			#elif defined CORENGINE_USE_PLATFORM_WIN32
+			#elif (CORENGINE_PLATFORM == CORENGINE_WINDOWS)
 			// This struct can be used to initialize CorE::Windowing::Window
 			//
 			// TODO - add support for extended window styles
@@ -83,41 +86,17 @@ namespace CorE
 			Window(WindowProperties* p_props, Win32WindowCreateInfo* p_create_info);
 			~Window();
 
-			#elif defined CORENGINE_USE_PLATFORM_XCB
-			void initXCBSurface(xcb_connection_t* p_connection, xcb_window_t window);
-
-			#elif defined CORENGINE_USE_PLATFORM_XLIB
-			void initXLibSurface(Display* p_display, Window window);
-
-			#elif defined CORENGINE_USE_PLATFORM_DIRECTFB
-			void initDirectFBSurface(IDirectFB* p_interface, IDirectFBSurface* p_surface);
-
-			#elif defined CORENGINE_USE_PLATFORM_XRANDR
-			void initXRandRSurface();
-
-			#elif defined CORENGINE_USE_PLATFORM_GGP
-			void initGoogleGamesSurface(GgpStreamDescriptor stream_descriptor);
-
+			#elif defined CORENGINE_USE_PLATFORM_X11
+			void initX11Surface(Display* p_display, Window window);
+			
 			#elif defined CORENGINE_USE_PLATFORM_IOS
 			void initIOSSurface();
 
 			#elif defined CORENGINE_USE_PLATFORM_MACOS
 			void initMacOSSurface();
 
-			#elif defined CORENGINE_USE_PLATFORM_OHOS
-			void initOpenHarmonySurface();
-
-			#elif defined CORENGINE_USE_PLATFORM_VI
-			void initVISurface();
-
-			#elif defined CORENGINE_USE_PLATFORM_FUCHSIA
-			void initFuchsiaSurface(zx_handle_t image_pipe);
-
 			#elif defined CORENGINE_USE_PLATFORM_METAL
 			void initMetalSurface();
-
-			#elif defined CORENGINE_USE_PLATFORM_QNX
-			void initQNXSurface();
 
 			#endif
 	

@@ -1,16 +1,12 @@
 
 #pragma once
 
-#include "CorE/corengine.hpp"
 #include "CorE/core_manager.hpp"
-#include "CorE/short_type.hpp"
 
 namespace CorE
 {
 	namespace Graphics
 	{
-
-
 
 		/*
 		* A shader object specifies programmable operations that execute for each vertex,
@@ -34,10 +30,10 @@ namespace CorE
 		};
 
 		/*
-		* A descriptor is an opaque data structure representing a shader
-		* resource such as a buffer, buffer view, image view, sampler, or 
-		* combined image sampler.
-		*/
+		 * A descriptor is an opaque data structure representing a shader
+		 * resource such as a buffer, buffer view, image view, sampler, or 
+		 * combined image sampler.
+		 */
 		namespace Descriptor
 		{
 
@@ -49,17 +45,19 @@ namespace CorE
 			};
 
 			/*
-			* A group of descriptors with certain layout.
-			*/
+			 * A group of descriptors.
+			 */
 			struct DescriptorSet
 			{
 
 				DescriptorSet(VkDescriptorSetLayoutCreateFlags flags, 
 					std::vector<VkDescriptorSetLayoutBinding> bindings);
 
-				vec<IDescriptor> descriptors;
+
+
+				std::vector<IDescriptor> descriptors;
 				VkDescriptorSetLayout vk_handle;
-				LogicalDevice* p_device;
+				CorE::LogicalDevice* p_device;
 			};
 
 
@@ -75,7 +73,7 @@ namespace CorE
 			struct StorageImage : IDescriptor
 			{
 				static constexpr VkDescriptorType type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-
+				
 			};
 
 			/*

@@ -3,6 +3,7 @@
 
 #include "CorE/core_manager.hpp"
 #include "CorE/window_manager.hpp"
+#include "CorE/graphics.hpp"
 
 #include "CorE/short_type.hpp"
 #include "CorE/debug.hpp"
@@ -393,7 +394,7 @@ void CorE::CommandBuffer::beginRenderPass(VkRenderingInfo* p_info)
 // Shaders must be linked before binding.
 void CorE::CommandBuffer::bindShader(Graphics::Shader* p_shader, VkShaderStageFlagBits stage)
 {
-	vkCmdBindShadersEXT(vk_handle, 1, &stage, &p_shader->vk_handle);
+	vkCmdBindShadersEXT(this->vk_handle, 1, &stage, &p_shader->vk_handle);
 }
 
 void CorE::CommandBuffer::begin(VkCommandBufferUsageFlags flags, VkCommandBufferInheritanceInfo* p_inherit_info)
@@ -523,4 +524,16 @@ void CorE::Application::finalCleanup()
 VkSemaphoreType CorE::Queue::Semaphore::getType()
 {
 	return type;
+}
+
+CorE::Swapchain::Swapchain(LogicalDevice* p_device, VkSwapchainCreateInfoKHR info)
+{
+	this->p_device = p_device;
+	ensureVkSuccess(vkCreateSwapchainKHR(p_device->vk_handle, &info, nullptr, &vk_handle),
+		"Failed to create swapchain.");
+}
+
+void CorE::Swapchain::isOK()
+{
+	ensureVkSuccess(vkGetSwapchainStatusKHR(p_device->vk_handle, vk_handle));
 }

@@ -17,7 +17,7 @@ target_include_directories(
 )
 
 # build for weendows
-add_compile_definitions(CORENGINE_USE_PLATFORM_WIN32)
+add_compile_definitions(CORENGINE_BUILDFOR_WINDOWS)
 
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/slang-2025.19.1-windows-x86_64/cmake")
 message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
@@ -25,7 +25,7 @@ message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 target_link_directories(
 	CorEngine 
 	PRIVATE 
-	"dependencies/slang-2025.18.1-windows-aarch64/lib"
+	"dependencies/slang-2025.18.1-windows-aarch64/lib" # wtf aarch64??? TODO
 )
 
 target_link_libraries(

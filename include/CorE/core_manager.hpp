@@ -9,7 +9,14 @@
 #include "CorE/short_type.hpp"
 #include "CorE/debug.hpp"
 #include "CorE/data_types.hpp"
-#include "CorE/graphics.hpp"
+
+
+///
+/// put all weird vulkan stuff here,
+/// will probably organize it later.
+///
+
+
 
 namespace CorE
 {
@@ -22,10 +29,36 @@ namespace CorE
 	struct Semaphore;
 	struct PhysicalDevice;
 
-	/**
-	* Command pool is a pool of memory from which command buffers are allocated.
-	* A single command pool must NOT be used concurrently in multiple threads.
-	*/
+	namespace Graphics
+	{
+		struct Shader;
+	}
+
+
+	/*
+	 * Array of images that are presented to the
+	 * screen one after another.
+	 * 
+	 */
+	struct Swapchain
+	{
+
+		Swapchain(LogicalDevice* p_device, VkSwapchainCreateInfoKHR info);
+
+		// r u ok?
+		void isOK();
+		
+		LogicalDevice* p_device;
+		VkSwapchainKHR vk_handle;
+		Windowing::Window* p_window;
+
+	};
+
+
+	/*
+	 * Command pool is a pool of memory from which command buffers are allocated.
+	 * A single command pool must NOT be used concurrently in multiple threads.
+	 */
 	struct CommandPool
 	{
 
