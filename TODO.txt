@@ -1,0 +1,10 @@
+// draw teapot
+
+// Linux/GCC portability fixes:
+// - Replace non-standard std::exception("message") calls with a portable exception type
+//   in src/debug.cpp and src/core_manager.cpp.
+// - Pass the required error-message argument to ensureVkSuccess() in Swapchain::isOK().
+// - Stop returning references to local variables from matrix operations in src/matrix.cpp;
+//   return Mat4x4/Vec4 results by value instead.
+// - Implement CorE::Windowing::Window::initWaylandSurface(); the source currently only
+//   declares an unrelated global initWaylandSurface() function.
